@@ -42,3 +42,9 @@ def session(request, session_id):
         "session": session,
     }
     return render(request, "jokes/session.html", context=context)
+
+
+def room(request, room_name):
+    return render(request, 'jokes/room.html', {
+        'room_name': room_name
+    })
