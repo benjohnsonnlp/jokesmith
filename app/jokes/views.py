@@ -11,7 +11,7 @@ def index(request):
 
 def login(request):
     name = request.POST["username"]
-    player = Player.objects.get_or_create(name=name)
+    player, _ = Player.objects.get_or_create(name=name)
 
     return HttpResponseRedirect(reverse("landing", args=[player.id]))
 
@@ -28,7 +28,7 @@ def landing(request, player_id):
 
 def add_session(request):
     name = request.POST["name"]
-    session = Session.objects.get_or_create(name=name)
+    session, _ = Session.objects.get_or_create(name=name)
 
     player = get_object_or_404(Player, pk=request.POST["player_id"])
     player.session = session
