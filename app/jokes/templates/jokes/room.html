@@ -6,6 +6,8 @@
     <title>Chat Room</title>
 </head>
 <body>
+<label for="username">Name:</label>
+<input id="username" type="text" value="anon"><br/>
 <textarea id="chat-log" cols="100" rows="20"></textarea><br>
 <input id="chat-message-input" type="text" size="100"><br>
 <input id="chat-message-submit" type="button" value="Send">
@@ -27,7 +29,11 @@
 
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
-        document.querySelector('#chat-log').value += (data.message + '\n');
+        var message = data.message;
+        if ("username" in data) {
+            message = data.username + ": " + message;
+        }
+        document.querySelector('#chat-log').value += (message + '\n');
     };
 
     chatSocket.onclose = function (e) {
@@ -44,7 +50,9 @@
     document.querySelector('#chat-message-submit').onclick = function (e) {
         const messageInputDom = document.querySelector('#chat-message-input');
         const message = messageInputDom.value;
+        const username = document.querySelector("#username").value;
         chatSocket.send(JSON.stringify({
+            "username": username,
             'message': message
         }));
         messageInputDom.value = '';
