@@ -128,7 +128,7 @@ django_heroku.settings(locals())
 
 # Channels
 ASGI_APPLICATION = 'app.routing.application'
-REDIS_HOST= environ["REDIS_URL"]
+REDIS_HOST = environ["REDIS_URL"]
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
