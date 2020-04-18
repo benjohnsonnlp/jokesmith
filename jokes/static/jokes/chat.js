@@ -16,8 +16,10 @@ const chatSocket = new WebSocket(
 
 chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
-    var message = playerName + ": " + data.message;
-    $('#chat-log').append(message + '\n');
+    if (data.type === "chatMessage") {
+        const message = data.username + ": " + data.message;
+        $('#chat-log').append(message + '\n');
+    }
 };
 
 chatSocket.onclose = function (e) {
@@ -35,6 +37,7 @@ document.querySelector('#chat-message-submit').onclick = function (e) {
     const messageInputDom = document.querySelector('#chat-message-input');
     const message = messageInputDom.value;
     chatSocket.send(JSON.stringify({
+        "type": "chatMessage",
         "username": playerName,
         'message': message
     }));
