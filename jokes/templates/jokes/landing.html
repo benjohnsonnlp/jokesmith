@@ -26,7 +26,7 @@
     {% else %}
     <ul>
     {% for session in sessions %}
-        <li><a href="{% url 'session' session.id %}">{{session.name}}</a></li>
+        <li><a href="{% url 'session' player.id session.id %}">{{session.name}}</a></li>
     {% endfor %}
     </ul>
     {% endif %}

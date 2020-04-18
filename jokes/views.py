@@ -33,18 +33,14 @@ def add_session(request):
     player = get_object_or_404(Player, pk=request.POST["player_id"])
     player.session = session
     player.save()
-    return HttpResponseRedirect(reverse("session", args=[session.id]))
+    return HttpResponseRedirect(reverse("session", args=[player.id, session.id]))
 
 
-def session(request, session_id):
-    session = Session.objects.get(pk=session_id)
-    context = {
-        "session": session,
-    }
-    return render(request, "jokes/session.html", context=context)
+def session(request, player_id, session_id):
+    session: Session = get_object_or_404(Session, pk=session_id)
+    player: Player = get_object_or_404(Player, pk=player_id)
 
-
-def room(request, room_name):
-    return render(request, 'jokes/room.html', {
-        'room_name': room_name
+    return render(request, 'jokes/session.html', {
+        'session': session,
+        'player': player,
     })

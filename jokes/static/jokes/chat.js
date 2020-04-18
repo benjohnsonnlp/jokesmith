@@ -1,4 +1,5 @@
-const roomName = JSON.parse(document.getElementById('room-name').textContent);
+//playerName and lobbyName defined in session.html
+console.log("Recieved playerName " + playerName + " and sessionName " + sessionName);
 if (window.location.protocol === 'https:') {
     protocol = 'wss:';
 } else {
@@ -9,16 +10,13 @@ const chatSocket = new WebSocket(
     protocol
     + window.location.host
     + '/ws/chat/'
-    + roomName
+    + sessionName
     + '/'
 );
 
 chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
-    var message = data.message;
-    if ("username" in data) {
-        message = data.username + ": " + message;
-    }
+    var message = playerName + ": " + data.message;
     $('#chat-log').append(message + '\n');
 };
 
@@ -36,9 +34,8 @@ document.querySelector('#chat-message-input').onkeyup = function (e) {
 document.querySelector('#chat-message-submit').onclick = function (e) {
     const messageInputDom = document.querySelector('#chat-message-input');
     const message = messageInputDom.value;
-    const username = document.querySelector("#username").value;
     chatSocket.send(JSON.stringify({
-        "username": username,
+        "username": playerName,
         'message': message
     }));
     messageInputDom.value = '';
