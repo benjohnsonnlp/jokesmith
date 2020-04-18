@@ -1,5 +1,6 @@
-//playerName and lobbyName defined in session.html
-console.log("Recieved playerName " + playerName + " and sessionName " + sessionName);
+var player = JSON.parse(document.getElementById('player').textContent);
+var session = JSON.parse(document.getElementById('session').textContent);
+
 if (window.location.protocol === 'https:') {
     protocol = 'wss:';
 } else {
@@ -10,17 +11,16 @@ const chatSocket = new WebSocket(
     protocol
     + window.location.host
     + '/ws/chat/'
-    + sessionName
+    + session.name
     + '/'
 );
 
 chatSocket.onopen = function (e) {
     chatSocket.send(JSON.stringify({
         "type": "user_joined",
-        "username": playerName,
+        "username": player.name,
     }));
 }
-
 
 chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
@@ -30,6 +30,9 @@ chatSocket.onmessage = function (e) {
         $('#chat-log').append(message + '\n');
     } else if (data.type === "user_joined") {
         const message = data.username + " has joined the fray!";
+        $('#chat-log').append(message + '\n');
+    } else if (data.type === "player_readied") {
+        const message = data.username + " is ready to start!";
         $('#chat-log').append(message + '\n');
     }
 };
@@ -45,12 +48,20 @@ document.querySelector('#chat-message-input').onkeyup = function (e) {
     }
 };
 
+
+document.querySelector('#readyButton').onclick = function (e) {
+    chatSocket.send(JSON.stringify({
+        "type": "player_readied",
+        "username": player.name
+    }));
+};
+
 document.querySelector('#chat-message-submit').onclick = function (e) {
     const messageInputDom = document.querySelector('#chat-message-input');
     const message = messageInputDom.value;
     chatSocket.send(JSON.stringify({
         "type": "chat_message",
-        "username": playerName,
+        "username": player.name,
         'message': message
     }));
     messageInputDom.value = '';

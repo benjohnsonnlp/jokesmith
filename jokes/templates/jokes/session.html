@@ -7,18 +7,17 @@
     <title>Chat Room</title>
 </head>
 <body>
-<textarea  id="chat-log" cols="100" rows="20"></textarea><br>
+{% if not session.started %}
+<input type="button" value="I'm ready!" id="readyButton"/><br/>
+{% endif %}
+<textarea id="chat-log" cols="100" rows="20"></textarea><br>
 <input id="chat-message-input" type="text" size="100"><br>
 <input id="chat-message-submit" type="button" value="Send">
-{{ room_name|json_script:"room-name" }}
-<script
-  src="https://code.jquery.com/jquery-3.4.1.min.js"
-  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-  crossorigin="anonymous"></script>
-<script>
-    playerName = "{{player.name}}";
-    sessionName = "{{session.name}}";
-</script>
+{{player.dict|json_script:"player"}}
+{{session.dict|json_script:"session"}}
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
 <script src="{% static 'jokes/chat.js' %}"></script>
 </body>
 </html>

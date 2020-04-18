@@ -1,6 +1,9 @@
 import json
 
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+
+from jokes.models import Session, Player
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -40,3 +43,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def user_joined(self, event):
         # Broadcast back to clients
         await self.send(text_data=json.dumps(event))
+
+    async def player_readied(self, event):
+        await self.ready_player(event["username"])
+        await self.send(text_data=json.dumps(event))
+
+    @database_sync_to_async
+    def ready_player(self, player_name):
+        player: Player = Player.objects.get(name=player_name)
+        player.is_ready = True
+        player.save()
