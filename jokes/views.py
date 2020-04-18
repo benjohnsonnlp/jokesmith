@@ -16,7 +16,7 @@ def login(request):
     return HttpResponseRedirect(reverse("landing", args=[player.id]))
 
 
-def landing(request, player_id):
+def player(request, player_id):
     player = Player.objects.get(pk=player_id)
     sessions = Session.objects.filter()
     context = {
