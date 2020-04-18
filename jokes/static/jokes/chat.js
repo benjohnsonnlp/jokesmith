@@ -14,10 +14,22 @@ const chatSocket = new WebSocket(
     + '/'
 );
 
+chatSocket.onopen = function (e) {
+    chatSocket.send(JSON.stringify({
+        "type": "user_joined",
+        "username": playerName,
+    }));
+}
+
+
 chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
-    if (data.type === "chatMessage") {
+    console.log("Received message:  " + data);
+    if (data.type === "chat_message") {
         const message = data.username + ": " + data.message;
+        $('#chat-log').append(message + '\n');
+    } else if (data.type === "user_joined") {
+        const message = data.username + " has joined the fray!";
         $('#chat-log').append(message + '\n');
     }
 };
@@ -37,7 +49,7 @@ document.querySelector('#chat-message-submit').onclick = function (e) {
     const messageInputDom = document.querySelector('#chat-message-input');
     const message = messageInputDom.value;
     chatSocket.send(JSON.stringify({
-        "type": "chatMessage",
+        "type": "chat_message",
         "username": playerName,
         'message': message
     }));
