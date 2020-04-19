@@ -37,8 +37,12 @@ def add_session(request):
 
 
 def session(request, player_id, session_id):
-    session: Session = get_object_or_404(Session, pk=session_id)
     player: Player = get_object_or_404(Player, pk=player_id)
+    try:
+        session: Session = Session.objects.get(pk=session_id)
+    except Session.DoesNotExist:
+        return HttpResponseRedirect(reverse("landing", args=[player.id]))
+
     player.session = session
     player.save()
     return render(request, 'jokes/session.html', {

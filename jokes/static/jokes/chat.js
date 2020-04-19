@@ -17,6 +17,10 @@ const chatSocket = new WebSocket(
     + '/'
 );
 
+chatSocket.onerror = function (e) {
+    location.reload();
+}
+
 chatSocket.onopen = function (e) {
     chatSocket.send(JSON.stringify({
         "type": "user_joined",
