@@ -67,17 +67,26 @@ function pose_questions(data) {
         data: {
             player_id: player.id
         }
-    }).done(function(msg){
+    }).done(function (msg) {
         console.log("Received response from getQuestion" + msg)
         msg = JSON.parse(msg);
         $('#promptResponse .prompt').text(msg.prompt);
     });
 }
 
+function user_joined(data) {
+    if (data.username !== player.name) {
+        $('#playerList ul').append(`
+            <li class="list-group-item">${data.username}</li>
+        `);
+    }
+}
+
 function handle_game_events(data) {
     const handlers = {
         "start_match": start_match,
         "all_prompts_submitted": pose_questions,
+        "user_joined": user_joined
     };
     if (data.type in handlers) {
         handlers[data.type](data);

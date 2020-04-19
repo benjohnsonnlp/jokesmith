@@ -25,26 +25,38 @@
 <body style="height: 100%" class="h-100 mh-100">
 
 <div class="container h-100 mh-100">
-    <div class="mh-50 h-50" id="playArea" style="border:2px solid lightgray; padding:5px">
-        <h1>Phase: {{ phase }}</h1>
-        <div id="prompts" style="{% if phase == "prompts" %}{% else %}display:none{% endif %}">
-            <h4>Fill out two clues!</h4>
-            <p>
-                Clues should be sound like a title of a top ten list, e.g. "awkward foods to serve at a funeral" or
-                "best ways to get rid of an ex". If you really can't think of something, leave it blank.
-            </p>
-            <input type="text" class="form-control prompt" placeholder="Enter prompt here"/>
-            <input type="text" class="form-control prompt" placeholder="Enter another prompt here"/>
-            <input type="button" id="submitPrompt" class="btn btn-primary" value="Done!"/>
+    <div class="row mh-50 h-50" style="border:2px solid lightgray; padding:5px">
+        <div class="col-8" id="playArea">
+            <h1>Phase: {{ phase }}</h1>
+            <div id="prompts" style="{% if phase == "prompts" %}{% else %}display:none{% endif %}">
+                <h4>Fill out two clues!</h4>
+                <p>
+                    Clues should be sound like a title of a top ten list, e.g. "awkward foods to serve at a funeral" or
+                    "best ways to get rid of an ex". If you really can't think of something, leave it blank.
+                </p>
+                <input type="text" class="form-control prompt" placeholder="Enter prompt here"/>
+                <input type="text" class="form-control prompt" placeholder="Enter another prompt here"/>
+                <input type="button" id="submitPrompt" class="btn btn-primary" value="Done!"/>
+            </div>
+            {% if phase == 'start' %}
+                <input type="button" value="I'm ready!" id="readyButton"/><br/>
+            {% elif phase == 'waiting' %}
+                <h3>Sorry, we already got started. Hang out and watch for the results here!</h3>
+            {% endif %}
+            <div id="promptResponse" style="display: none">
+                <h3 class="prompt"></h3>
+                <input type="text" class="form-control response" placeholder="Type your response here"/>
+            </div>
         </div>
-        {% if phase == 'start' %}
-            <input type="button" value="I'm ready!" id="readyButton"/><br/>
-        {% elif phase == 'waiting' %}
-            <h3>Sorry, we already got started. Hang out and watch for the results here!</h3>
-        {% endif %}
-        <div id="promptResponse" style="display: none">
-            <h3 class="prompt"></h3>
-            <input type="text" class="form-control response" placeholder="Type your response here"/>
+        <div id="playerList" class="col" style="border:2px solid lightgray; padding:5px">
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-primary">{{ player.name }}</li>
+                {% for p in players %}
+                    {% if p != player %}
+                        <li class="list-group-item">{{ p.name }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
         </div>
     </div>
     <div class="mh-50 h-50" style="border:2px solid lightgray; padding:5px">

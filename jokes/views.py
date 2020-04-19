@@ -65,6 +65,7 @@ def session(request, player_id, session_id):
         'session': session,
         'phase': phase,
         'player': player,
+        'players': session.player_set.all(),
     })
 
 
