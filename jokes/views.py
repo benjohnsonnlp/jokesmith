@@ -42,10 +42,25 @@ def session(request, player_id, session_id):
         session: Session = Session.objects.get(pk=session_id)
     except Session.DoesNotExist:
         return HttpResponseRedirect(reverse("landing", args=[player.id]))
-
-    player.session = session
-    player.save()
+    phase = ''
+    if player.session == session:
+        if player.submitted_prompts:
+            phase = "questions"
+        elif player.is_ready and session.started:
+            phase = 'prompts'
+        elif player.is_ready:
+            phase = 'readied'
+        else:
+            phase = 'start'
+    else:
+        if session.started:
+            phase = 'waiting'
+        else:
+            phase = 'start'
+        player.session = session
+        player.save()
     return render(request, 'jokes/session.html', {
         'session': session,
+        'phase': phase,
         'player': player,
     })

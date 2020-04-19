@@ -13,7 +13,7 @@ const chatSocket = new WebSocket(
     + '/ws/chat/'
     + session.id
     + '/' +
-    + player.id
+    +player.id
     + '/'
 );
 
@@ -44,6 +44,25 @@ function send_message(title, body) {
     log.scrollTop(height);
 }
 
+function start_match(data) {
+    $('#prompts').css('display', 'initial');
+    $('#submitPrompt').click(function() {
+        chatSocket.send(JSON.stringify({
+            "type": "prompt_submission",
+            "player": player.id,
+            'prompts': $('.prompt').map(function () { return $(this).val() }).get() // gets all the prompt vals
+        }));
+        $('#prompts').css('display', 'none');
+    });
+}
+
+function handle_game_events(data) {
+    const handlers = {
+        "start_match": start_match,
+    };
+    handlers[data.type](data);
+}
+
 chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
     console.log("Received message:  " + data);
@@ -61,6 +80,7 @@ chatSocket.onmessage = function (e) {
     }
     send_message(title, body);
 
+    handle_game_events(data);
 
 };
 
@@ -77,6 +97,7 @@ document.querySelector('#chat-message-input').onkeyup = function (e) {
 
 
 $('#readyButton').click(function (e) {
+    $('#readyButton').css('display', 'none');
     chatSocket.send(JSON.stringify({
         "type": "player_readied",
         "username": player.name

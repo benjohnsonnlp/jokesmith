@@ -4,7 +4,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.db import close_old_connections
 
-from jokes.models import Session, Player
+from jokes.models import Session, Player, Prompt
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -60,6 +60,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "start_match",
             }))
 
+    async def prompt_submission(self, event):
+        player: Player = await self.get_player(event['player'])
+        await self.send(text_data=json.dumps({
+            "type": event["type"],
+            "player": player.name,
+        }))
+
+        if player == self.player:
+            print("Adding prompts {} to player {}".format(event['prompts'], player))
+            if await self.record_prompts(event):
+                await self.send(text_data=json.dumps({
+                    "type": "all_prompts_submitted",
+                }))
+
     @database_sync_to_async
     def ready_player(self, player_name):
         close_old_connections()
@@ -98,11 +112,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def disconnect_db(self):
         close_old_connections()
         self.player.session = None
+        self.player.is_ready = False
+        self.player.submitted_prompts = False
         self.player.save()
         players = list(self.session.player_set.all())
         if not players:
             print("Closing session {}...".format(self.session.name))
             self.session.delete()
 
-
-
+    @database_sync_to_async
+    def record_prompts(self, event):
+        self.player.submitted_prompts = True
+        self.player.save()
+        for prompt_text in event['prompts']:
+            prompt: Prompt = Prompt(text=prompt_text, author=self.player)
+            prompt.save()
+        all_submitted = False
+        for player in self.session.player_set.all():
+            if not player.submitted_prompts:
+                all_submitted = False
+        return all_submitted

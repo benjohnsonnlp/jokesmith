@@ -26,13 +26,27 @@
 
 <div class="container h-100 mh-100">
     <div class="mh-50 h-50" id="playArea" style="border:2px solid lightgray; padding:5px">
-        {% if not session.started %}
-        <input type="button" value="I'm ready!" id="readyButton"/><br/>
+        <h1>Phase: {{ phase }}</h1>
+        <div id="prompts" style="{% if phase == "prompts" %}{% else %}display:none{% endif %}">
+            <h4>Fill out two clues!</h4>
+            <p>
+                Clues should be sound like a title of a top ten list, e.g. "awkward foods to serve at a funeral" or
+                "best ways to get rid of an ex". If you really can't think of something, leave it blank.
+            </p>
+            <input type="text" class="form-control prompt" placeholder="Enter prompt here"/>
+            <input type="text" class="form-control prompt" placeholder="Enter another prompt here"/>
+            <input type="button" id="submitPrompt" class="btn btn-primary" value="Done!"/>
+        </div>
+        {% if phase == 'start' %}
+            <input type="button" value="I'm ready!" id="readyButton"/><br/>
+        {% elif phase == 'waiting' %}
+            <h3>Sorry, we already got started. Hang out and watch for the results here!</h3>
         {% endif %}
     </div>
     <div class="mh-50 h-50" style="border:2px solid lightgray; padding:5px">
         <!--chat panel-->
-        <div class="overflow-auto" id="chat-log" style="overflow:auto;max-height: calc(100% - 47px); height:calc(100% - 47px)"></div>
+        <div class="overflow-auto" id="chat-log"
+             style="overflow:auto;max-height: calc(100% - 47px); height:calc(100% - 47px)"></div>
         <!--messaging controls-->
         <div class="form-row">
             <div class="col">
@@ -48,8 +62,8 @@
 </div>
 
 <!--context js objects-->
-{{player.dict|json_script:"player"}}
-{{session.dict|json_script:"session"}}
+{{ player.dict|json_script:"player" }}
+{{ session.dict|json_script:"session" }}
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"

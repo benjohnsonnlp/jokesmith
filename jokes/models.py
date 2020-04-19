@@ -15,6 +15,7 @@ class Player(models.Model):
     name = models.CharField(max_length=80)
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True)
     is_ready = models.BooleanField(default=False)
+    submitted_prompts = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("name", "session")
@@ -26,15 +27,13 @@ class Player(models.Model):
         return model_to_dict(self)
 
 
-class Question(models.Model):
-    text = models.TextField()
-
-
 class Prompt(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    text = models.TextField()
+    author = models.ForeignKey(Player, on_delete=models.SET_NULL, null=True)
 
 
 class Response(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     prompt = models.ForeignKey(Prompt, on_delete=models.CASCADE)
+    session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True)
     text = models.TextField()
