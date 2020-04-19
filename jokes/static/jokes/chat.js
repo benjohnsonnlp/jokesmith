@@ -11,7 +11,9 @@ const chatSocket = new WebSocket(
     protocol
     + window.location.host
     + '/ws/chat/'
-    + session.name
+    + session.id
+    + '/' +
+    + player.id
     + '/'
 );
 

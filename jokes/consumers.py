@@ -9,8 +9,10 @@ from jokes.models import Session, Player
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         room_name = self.scope['url_route']['kwargs']['room_name']
+        player_name = self.scope['url_route']['kwargs']['player_name']
         self.room_name = room_name.replace(' ', '-')
         self.session: Session = await self.get_session(room_name)
+        self.player: Player = await self.get_player(player_name)
         self.room_group_name = 'chat_%s' % self.room_name
 
         # Join room group
@@ -23,6 +25,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         # Leave room group
+        await self.disconnect_db()
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -64,7 +67,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_session(self, room_name) -> Session:
-        session: Session = Session.objects.get(name=room_name)
+        session: Session = Session.objects.get(pk=room_name)
         return session
 
     @database_sync_to_async
@@ -80,4 +83,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.session.save()
             return True
         return False
+
+    @database_sync_to_async
+    def get_player(self, player_name):
+        player: Player = Player.objects.get(pk=player_name)
+        return player
+
+    @database_sync_to_async
+    def disconnect_db(self):
+        self.player.session = None
+        self.player.save()
+        players = list(self.session.player_set.all())
+        if not players:
+            print("Closing session {}...".format(self.session.name))
+            self.session.delete()
+
+
 
