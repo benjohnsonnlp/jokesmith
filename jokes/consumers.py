@@ -2,6 +2,7 @@ import json
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.db import close_old_connections
 
 from jokes.models import Session, Player
 
@@ -61,17 +62,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def ready_player(self, player_name):
+        close_old_connections()
         player: Player = Player.objects.get(name=player_name)
         player.is_ready = True
         player.save()
 
     @database_sync_to_async
     def get_session(self, room_name) -> Session:
+        close_old_connections()
         session: Session = Session.objects.get(pk=room_name)
         return session
 
     @database_sync_to_async
     def match_ready(self):
+        close_old_connections()
         ready = True
         player: Player
         players = list(self.session.player_set.all())
@@ -86,11 +90,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_player(self, player_name):
+        close_old_connections()
         player: Player = Player.objects.get(pk=player_name)
         return player
 
     @database_sync_to_async
     def disconnect_db(self):
+        close_old_connections()
         self.player.session = None
         self.player.save()
         players = list(self.session.player_set.all())
