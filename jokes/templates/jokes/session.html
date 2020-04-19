@@ -1,7 +1,7 @@
 <!-- chat/templates/chat/session.html -->
 <!DOCTYPE html>
 {% load static %}
-<html lang="en">
+<html lang="en" style="height: 100%">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -22,22 +22,22 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-<body>
+<body style="height: 100%" class="h-100 mh-100">
 
-<div class="container">
-    {% if not session.started %}
-    <input type="button" value="I'm ready!" id="readyButton"/><br/>
-    {% endif %}
-    <div class="container">
-
-        <div class="container overflow-auto" style="max-height: 100px">
-            <div class="overflow-auto" id="chat-log" style="max-height:100px"></div>
-        </div>
+<div class="container h-100 mh-100">
+    <div class="mh-50 h-50" id="playArea" style="border:2px solid lightgray; padding:5px">
+        {% if not session.started %}
+        <input type="button" value="I'm ready!" id="readyButton"/><br/>
+        {% endif %}
+    </div>
+    <div class="mh-50 h-50" style="border:2px solid lightgray; padding:5px">
+        <!--chat panel-->
+        <div class="overflow-auto" id="chat-log" style="overflow:auto;max-height: calc(100% - 47px); height:calc(100% - 47px)"></div>
+        <!--messaging controls-->
         <div class="form-row">
             <div class="col">
                 <input class="form-control" id="chat-message-input" type="text" placeholder="Chat here...">
             </div>
-
             <div class="col-auto">
                 <input class="btn btn-primary" id="chat-message-submit" type="button" value="Send">
             </div>

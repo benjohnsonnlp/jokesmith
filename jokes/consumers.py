@@ -8,7 +8,9 @@ from jokes.models import Session, Player
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name'].replace(' ', '-')
+        room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_name = room_name.replace(' ', '-')
+        self.session: Session = await self.get_session(room_name)
         self.room_group_name = 'chat_%s' % self.room_name
 
         # Join room group
@@ -28,6 +30,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Receive message from WebSocket
     async def receive(self, text_data):
+        print("Received message: {}".format(text_data))
         text_data_json = json.loads(text_data)
 
         await self.channel_layer.group_send(
@@ -46,10 +49,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def player_readied(self, event):
         await self.ready_player(event["username"])
+
         await self.send(text_data=json.dumps(event))
+        if await self.match_ready():
+            await self.send(text_data=json.dumps({
+                "type": "start_match",
+            }))
 
     @database_sync_to_async
     def ready_player(self, player_name):
         player: Player = Player.objects.get(name=player_name)
         player.is_ready = True
         player.save()
+
+    @database_sync_to_async
+    def get_session(self, room_name) -> Session:
+        session: Session = Session.objects.get(name=room_name)
+        return session
+
+    @database_sync_to_async
+    def match_ready(self):
+        ready = True
+        player: Player
+        players = list(self.session.player_set.all())
+        for player in players:
+            if not player.is_ready:
+                ready = False
+        if len(players) > 2 and ready:
+            self.session.started = True
+            self.session.save()
+            return True
+        return False
+

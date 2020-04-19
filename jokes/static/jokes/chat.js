@@ -22,11 +22,27 @@ chatSocket.onopen = function (e) {
     }));
 }
 
+function send_message(title, body) {
+    if (!title && !body) {
+        return;
+    }
+    let message = '<div class="card">\n';
+    if (title) {
+        message += '<div class="card-header">' + title + '</div>\n';
+    }
+    message += '<div class="card-body">' + body + "</div></div>";
+    let log = $('#chat-log');
+    log.append(message);
+
+    let height = log[0].scrollHeight;
+    log.scrollTop(height);
+}
+
 chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
     console.log("Received message:  " + data);
-    var title = '';
-    var body = '';
+    let title = '';
+    let body = '';
     if (data.type === "chat_message") {
         title = data.username;
         body = data.message;
@@ -34,13 +50,12 @@ chatSocket.onmessage = function (e) {
         body = data.username + " has joined the fray!";
     } else if (data.type === "player_readied") {
         body = data.username + " is ready to start!";
+    } else if (data.type === "start_match") {
+        body = "Match is starting!";
     }
-    var message = '<div class="card">\n';
-    if (title) {
-        message += '<div class="card-header">' + title + '</div>\n';
-    }
-    message += '<div class="card-body">' + body + "</div></div>";
-     $('#chat-log').append(message);
+    send_message(title, body);
+
+
 };
 
 chatSocket.onclose = function (e) {
@@ -55,12 +70,12 @@ document.querySelector('#chat-message-input').onkeyup = function (e) {
 };
 
 
-document.querySelector('#readyButton').onclick = function (e) {
+$('#readyButton').click(function (e) {
     chatSocket.send(JSON.stringify({
         "type": "player_readied",
         "username": player.name
     }));
-};
+});
 
 document.querySelector('#chat-message-submit').onclick = function (e) {
     const messageInputDom = document.querySelector('#chat-message-input');
