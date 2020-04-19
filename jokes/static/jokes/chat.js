@@ -25,16 +25,22 @@ chatSocket.onopen = function (e) {
 chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
     console.log("Received message:  " + data);
+    var title = '';
+    var body = '';
     if (data.type === "chat_message") {
-        const message = data.username + ": " + data.message;
-        $('#chat-log').append(message + '\n');
+        title = data.username;
+        body = data.message;
     } else if (data.type === "user_joined") {
-        const message = data.username + " has joined the fray!";
-        $('#chat-log').append(message + '\n');
+        body = data.username + " has joined the fray!";
     } else if (data.type === "player_readied") {
-        const message = data.username + " is ready to start!";
-        $('#chat-log').append(message + '\n');
+        body = data.username + " is ready to start!";
     }
+    var message = '<div class="card">\n';
+    if (title) {
+        message += '<div class="card-header">' + title + '</div>\n';
+    }
+    message += '<div class="card-body">' + body + "</div></div>";
+     $('#chat-log').append(message);
 };
 
 chatSocket.onclose = function (e) {
