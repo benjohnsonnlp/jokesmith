@@ -42,6 +42,10 @@
         {% elif phase == 'waiting' %}
             <h3>Sorry, we already got started. Hang out and watch for the results here!</h3>
         {% endif %}
+        <div id="promptResponse" style="display: none">
+            <h3 class="prompt"></h3>
+            <input type="text" class="form-control response" placeholder="Type your response here"/>
+        </div>
     </div>
     <div class="mh-50 h-50" style="border:2px solid lightgray; padding:5px">
         <!--chat panel-->
@@ -62,11 +66,16 @@
 </div>
 
 <!--context js objects-->
+<script id="getQuestionURL">
+    "{% url 'question' player.id session.id %}"
+</script>
+
+{{ player.dict|json_script:"player" }}
 {{ player.dict|json_script:"player" }}
 {{ session.dict|json_script:"session" }}
 
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+<script src="https://code.jquery.com/jquery-3.5.0.min.js"
+        integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ="
         crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
         integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"

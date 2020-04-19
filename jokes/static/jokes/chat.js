@@ -1,5 +1,6 @@
-var player = JSON.parse(document.getElementById('player').textContent);
-var session = JSON.parse(document.getElementById('session').textContent);
+let player = JSON.parse(document.getElementById('player').textContent);
+let session = JSON.parse(document.getElementById('session').textContent);
+let getQuestionURL = JSON.parse(document.getElementById('getQuestionURL').textContent);
 
 if (window.location.protocol === 'https:') {
     protocol = 'wss:';
@@ -19,14 +20,14 @@ const chatSocket = new WebSocket(
 
 chatSocket.onerror = function (e) {
     location.reload();
-}
+};
 
 chatSocket.onopen = function (e) {
     chatSocket.send(JSON.stringify({
         "type": "user_joined",
         "username": player.name,
     }));
-}
+};
 
 function send_message(title, body) {
     if (!title && !body) {
@@ -46,26 +47,46 @@ function send_message(title, body) {
 
 function start_match(data) {
     $('#prompts').css('display', 'initial');
-    $('#submitPrompt').click(function() {
+    $('#submitPrompt').click(function () {
         chatSocket.send(JSON.stringify({
             "type": "prompt_submission",
             "player": player.id,
-            'prompts': $('.prompt').map(function () { return $(this).val() }).get() // gets all the prompt vals
+            'prompts': $('.prompt').map(function () {
+                return $(this).val()
+            }).get() // gets all the prompt vals
         }));
         $('#prompts').css('display', 'none');
+    });
+}
+
+function pose_questions(data) {
+    $('#promptResponse').css('display', 'initial');
+    $.ajax({
+        method: 'GET',
+        url: getQuestionURL,
+        data: {
+            player_id: player.id
+        }
+    }).done(function(msg){
+        console.log("Received response from getQuestion" + msg)
+        msg = JSON.parse(msg);
+        $('#promptResponse .prompt').text(msg.prompt);
     });
 }
 
 function handle_game_events(data) {
     const handlers = {
         "start_match": start_match,
+        "all_prompts_submitted": pose_questions,
     };
-    handlers[data.type](data);
+    if (data.type in handlers) {
+        handlers[data.type](data);
+    }
 }
 
 chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
-    console.log("Received message:  " + data);
+    console.log("Received message:  " + e.data);
     let title = '';
     let body = '';
     if (data.type === "chat_message") {
@@ -77,6 +98,8 @@ chatSocket.onmessage = function (e) {
         body = data.username + " is ready to start!";
     } else if (data.type === "start_match") {
         body = "Match is starting!";
+    } else if (data.type === "prompt_submission") {
+        body = data.player + " has submitted their prompts and are ready to go!"
     }
     send_message(title, body);
 

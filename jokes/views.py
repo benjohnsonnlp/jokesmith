@@ -1,8 +1,10 @@
-from django.http import HttpResponseRedirect
+import json
+
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 
-from .models import Player, Session
+from .models import Player, Session, Prompt
 
 
 def index(request):
@@ -64,3 +66,11 @@ def session(request, player_id, session_id):
         'phase': phase,
         'player': player,
     })
+
+
+def get_question(request, player_id, session_id):
+    player: Player = get_object_or_404(Player, pk=player_id)
+    response = {
+        "prompt": Prompt.objects.all()[0].text,
+    }
+    return HttpResponse(json.dumps(response, indent=2))

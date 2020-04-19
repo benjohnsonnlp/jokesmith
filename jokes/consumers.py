@@ -47,6 +47,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Broadcast back to clients
         await self.send(text_data=json.dumps(event))
 
+    async def all_prompts_submitted(self, event):
+        await self.send(text_data=json.dumps(event))
+
     async def user_joined(self, event):
         # Broadcast back to clients
         await self.send(text_data=json.dumps(event))
@@ -70,9 +73,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if player == self.player:
             print("Adding prompts {} to player {}".format(event['prompts'], player))
             if await self.record_prompts(event):
-                await self.send(text_data=json.dumps({
-                    "type": "all_prompts_submitted",
-                }))
+                print("Broadcasting that all prompts are submitted")
+                await self.channel_layer.group_send(
+                    self.room_group_name, {
+                        "type": "all_prompts_submitted",
+                    })
 
     @database_sync_to_async
     def ready_player(self, player_name):
@@ -125,9 +130,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.player.submitted_prompts = True
         self.player.save()
         for prompt_text in event['prompts']:
-            prompt: Prompt = Prompt(text=prompt_text, author=self.player)
-            prompt.save()
-        all_submitted = False
+            if prompt_text:
+                prompt: Prompt = Prompt(text=prompt_text, author=self.player)
+                prompt.save()
+        all_submitted = True
         for player in self.session.player_set.all():
             if not player.submitted_prompts:
                 all_submitted = False
