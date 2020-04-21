@@ -20,9 +20,12 @@ class PromptAdmin(admin.ModelAdmin):
 
 @admin.register(Response)
 class ResponseAdmin(admin.ModelAdmin):
+
     list_display = ("player", "prompt", "session", "text")
+    search_fields = ("text",)
 
 
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
+
     list_display = ("name", "started")
