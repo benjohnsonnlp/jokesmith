@@ -45,5 +45,5 @@ if settings.DEBUG:
             kwargs={"exception": Exception("Page not Found")},
         ),
         path("500/", default_views.server_error),
-        path(r'^__debug__/', include(debug_toolbar.urls))
+        path(r'__debug__/', include(debug_toolbar.urls))
     ]
