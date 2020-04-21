@@ -1,0 +1,39 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #00b8a9;
+  height: 100vh;
+}
+
+.container {
+    padding-top: 50px;
+}
+
+
+.dialog {
+  border-radius: 20px;
+  margin-top: 110px;
+  padding: 30px 25px 60px 25px;
+  max-width: 500px;
+  background-color: #ffde7d;
+  -webkit-box-shadow: 10px 10px 16px 0px rgba(38,38,38,0.24);
+  -moz-box-shadow: 10px 10px 16px 0px rgba(38,38,38,0.24);
+  box-shadow: 10px 10px 16px 0px rgba(38,38,38,0.24);
+
+}
+
+
+.login input {
+    width: 350px;
+}
+
+ul li {
+    list-style: none;
+}
+
+
+.logotype {
+    color: #f8f3d4;
+    font-size: 62px;
+    text-align: center;
+}

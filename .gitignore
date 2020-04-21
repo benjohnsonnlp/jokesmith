@@ -129,3 +129,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Mac Junk
+.DS_Store
+
+# IDE Stuff
+.vscode/
+.idea/
