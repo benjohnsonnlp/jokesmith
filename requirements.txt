@@ -36,3 +36,4 @@ zope.interface==5.1.0
 # dev
  django-debug-toolbar==2.2
  django-extensions==2.2.9
+ Werkzeug==1.0.1
