@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'hy58uzwp0a+5#*nyb^w3wdq%mx1a3vy@xh7um%tw#12zgz!^#a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -77,7 +77,7 @@ if DEBUG:
 
 
 
-INTERNAL_IPS = ['127.0.0.1']  # Allow DjDT to show up.    
+INTERNAL_IPS = ['127.0.0.1']  # Allow DjDT to show up.
 
 TEMPLATES = [
     {
