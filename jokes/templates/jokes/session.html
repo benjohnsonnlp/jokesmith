@@ -39,13 +39,17 @@
                 <input type="button" id="submitPrompt" class="btn btn-primary" value="Done!"/>
             </div>
             {% if phase == 'start' %}
-                <input type="button" value="I'm ready!" id="readyButton"/><br/>
+                <input type="button" class="btn btn-primary" value="I'm ready!" id="readyButton"/><br/>
             {% elif phase == 'waiting' %}
                 <h3>Sorry, we already got started. Hang out and watch for the results here!</h3>
             {% endif %}
             <div id="promptResponse" style="display: none">
                 <h3 class="prompt"></h3>
-                <input type="text" class="form-control response" placeholder="Type your response here"/>
+                <input type="text" id="responseText" class="form-control response" placeholder="Type your response here"/>
+                <input type="submit" class="btn-primary" id="submitResponse"/>
+            </div>
+            <div id="waiting" style="display: none">
+                <h3>Waiting on other players...</h3>
             </div>
         </div>
         <div id="playerList" class="col" style="border:2px solid lightgray; padding:5px">

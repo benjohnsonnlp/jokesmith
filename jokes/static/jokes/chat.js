@@ -59,8 +59,21 @@ function start_match(data) {
     });
 }
 
+function submitResponse() {
+    $('#promptResponse').css('display', 'none');
+    $('#waiting').css('display', 'initial');
+    let textfield = $('#responseText');
+    chatSocket.send(JSON.stringify({
+        "type": "response_submission",
+        "player": player.id,
+        "text": textfield.val(),
+        "response_id": textfield.attr("response_id")
+    }));
+}
+
 function pose_questions(data) {
     $('#promptResponse').css('display', 'initial');
+    $('#waiting').css('display', 'none');
     $.ajax({
         method: 'GET',
         url: getQuestionURL,
@@ -70,7 +83,19 @@ function pose_questions(data) {
     }).done(function (msg) {
         console.log("Received response from getQuestion" + msg)
         msg = JSON.parse(msg);
-        $('#promptResponse .prompt').text(msg.prompt);
+        let prompt = $('#promptResponse .prompt');
+        prompt.text(msg.prompt.text);
+        $('#submitResponse').click(function (evt) {
+            submitResponse()
+        });
+        let text = $('#responseText');
+
+        text.attr("response_id", msg.response.id);
+        text.click(function (event) {
+            if (event.keyCode == 13) {
+                submitResponse();
+            }
+        });
     });
 }
 
@@ -86,7 +111,8 @@ function handle_game_events(data) {
     const handlers = {
         "start_match": start_match,
         "all_prompts_submitted": pose_questions,
-        "user_joined": user_joined
+        "user_joined": user_joined,
+        "next_question": pose_questions,
     };
     if (data.type in handlers) {
         handlers[data.type](data);
