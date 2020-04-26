@@ -68,7 +68,7 @@ class Prompt(models.Model):
     @staticmethod
     def random():
         max_id = Prompt.objects.all().aggregate(max_id=Max("id"))["max_id"]
-        if max_id < 1:
+        if not max_id:
             raise ValueError("No prompts in DB")
         while True:
             pk = randint(1, max_id)
