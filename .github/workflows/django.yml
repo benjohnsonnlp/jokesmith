@@ -29,7 +29,7 @@ jobs:
       run: |
         sudo apt-get install redis-server
         sudo systemctl enable redis-server.service
-        export REDIS_URL=127.0.0.1:6379
     - name: Run Tests
       run: |
+        export REDIS_URL=redis://127.0.0.1:6379
         python manage.py test
