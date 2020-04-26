@@ -70,7 +70,9 @@ function pose_questions(data) {
     }).done(function (msg) {
         console.log("Received response from getQuestion" + msg)
         msg = JSON.parse(msg);
-        $('#promptResponse .prompt').text(msg.prompt);
+        let prompt = $('#promptResponse .prompt');
+        prompt.text(msg.prompt.text);
+        prompt.attr("response_id", msg.response.id);
     });
 }
 

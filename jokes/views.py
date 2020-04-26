@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 
-from .models import Player, Session, Prompt
+from .models import Player, Session, Prompt, Response
 
 
 def index(request):
@@ -71,7 +71,10 @@ def session(request, player_id, session_id):
 
 def get_question(request, player_id, session_id):
     player: Player = get_object_or_404(Player, pk=player_id)
-    response = {
-        "prompt": Prompt.objects.all()[0].text,
+    response: Response =  player.get_unanswered_questions()[0]
+
+    ajax_response = {
+        "response": response.dict(),
+        "prompt": response.prompt.dict(),
     }
-    return HttpResponse(json.dumps(response, indent=2))
+    return HttpResponse(json.dumps(ajax_response, indent=2))
