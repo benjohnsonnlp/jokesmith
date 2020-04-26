@@ -4,7 +4,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.db import close_old_connections
 
-from jokes.models import Session, Player, Prompt
+from jokes.models import Session, Player, Prompt, Response
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -63,6 +63,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "start_match",
             }))
 
+    async def response_submission(self, event):
+        player: Player = await self.get_player(event['player'])
+        if player == self.player:
+            unanswered = await self.save_responses(event)
+            if unanswered:
+                await self.send(text_data=json.dumps({
+                    "type": "next_question",
+                }))
+
+        await self.send(text_data=json.dumps({
+            "type": event["type"],
+            "player": player.name,
+        }))
+
+        # check if all are submitted
+
     async def prompt_submission(self, event):
         player: Player = await self.get_player(event['player'])
         await self.send(text_data=json.dumps({
@@ -78,6 +94,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     self.room_group_name, {
                         "type": "all_prompts_submitted",
                     })
+
+    @database_sync_to_async
+    def save_responses(self, event):
+        print("Saving response for player {} from event {}".format(
+            self.player.name,
+            event['response_id']
+        ))
+        close_old_connections()
+        response: Response = Response.objects.get(pk=event['response_id'])
+        response.text = event['text']
+        response.save()
+        return self.player.get_unanswered_questions()
+
 
     @database_sync_to_async
     def ready_player(self, player_name):

@@ -1,4 +1,4 @@
-from random import random, shuffle, randint
+from random import shuffle, randint
 
 from django.db import models
 from django.db.models import Max
@@ -23,13 +23,12 @@ class Session(models.Model):
             player = players[i]
             partner = players[(i + 1) % len(players)]
             prompt = Prompt.random()
-            response = Response(player=player, prompt=prompt, session=self, text="")
+            response = Response(player=player, prompt=prompt, session=self,
+                                text="")
             response.save()
-            response = Response(player=partner, prompt=prompt, session=self, text="")
+            response = Response(player=partner, prompt=prompt, session=self,
+                                text="")
             response.save()
-
-
-
 
 
 class Player(models.Model):
@@ -50,7 +49,7 @@ class Player(models.Model):
     def get_unanswered_questions(self):
         if len(self.session.response_set.all()) == 0:
             self.session.build_responses()
-        responses = self.response_set.filter(text="")
+        responses = list(self.response_set.filter(text="", session=self.session))
         return responses
 
 
@@ -78,8 +77,6 @@ class Prompt(models.Model):
                 return prompt
 
 
-
-
 class Response(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     prompt = models.ForeignKey(Prompt, on_delete=models.CASCADE)
@@ -88,3 +85,10 @@ class Response(models.Model):
 
     def dict(self):
         return model_to_dict(self)
+
+    def __str__(self):
+        return "Response for player {} with text '{}' for session {}".format(
+            self.player.name,
+            self.text,
+            self.session.name,
+        )
