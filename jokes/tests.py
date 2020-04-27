@@ -4,12 +4,17 @@ from django.test import TestCase
 from django.urls import reverse
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 
 class WorkflowTests(TestCase):
 
     def test_login(self):
-        browser = webdriver.Chrome()
+        chrome_options = Options()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        browser = webdriver.Chrome(chrome_options=chrome_options)
         url = "http://localhost:8000" + reverse('index')
         browser.get(url)
 
@@ -22,7 +27,11 @@ class WorkflowTests(TestCase):
         browser.quit()
 
     def test_join_session(self):
-        browser = webdriver.Chrome()
+        chrome_options = Options()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        browser = webdriver.Chrome(chrome_options=chrome_options)
         url = "http://localhost:8000" + reverse('index')
         browser.get(url)
 
@@ -41,10 +50,14 @@ class WorkflowTests(TestCase):
         browser.quit()
 
     def test_all(self):
+        chrome_options = Options()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
         browsers = [
-            webdriver.Chrome(),
-            webdriver.Chrome(),
-            webdriver.Chrome(),
+            webdriver.Chrome(chrome_options=chrome_options),
+            webdriver.Chrome(chrome_options=chrome_options),
+            webdriver.Chrome(chrome_options=chrome_options),
         ]
 
         url = "http://localhost:8000" + reverse('index')
