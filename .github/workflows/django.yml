@@ -1,5 +1,6 @@
 name: Django CI
-
+env:
+  - REDIS_URL=redis://127.0.0.1:6379
 on:
   push:
     branches: [ master ]
@@ -50,5 +51,4 @@ jobs:
     - name: Run Tests
       run: |
         python manage.py migrate
-        export REDIS_URL=redis://127.0.0.1:6379
         python manage.py test
