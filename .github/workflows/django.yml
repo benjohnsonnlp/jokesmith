@@ -1,5 +1,14 @@
 name: Django CI
 
+services:
+  - postgresql
+
+variables:
+  POSTGRES_DB: test_db
+  POSTGRES_USER: user
+  POSTGRES_PASSWORD: pass
+  POSTGRES_HOST_AUTH_METHOD: trust
+
 on:
   push:
     branches: [ master ]
@@ -49,6 +58,7 @@ jobs:
         sudo chmod +x /usr/bin/chromedriver
     - name: Run Tests
       run: |
+        export DATABASE_URL=postgres://user:pass@localhost:5432/test_db
         export REDIS_URL=redis://127.0.0.1:6379
         python manage.py migrate
         python manage.py runserver &
