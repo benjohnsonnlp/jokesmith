@@ -13,14 +13,21 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    # Service containers to run with `container-job`
     services:
-      - postgresql
-
-    variables:
-      POSTGRES_DB: test_db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_HOST_AUTH_METHOD: trust
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
 
     strategy:
@@ -29,41 +36,42 @@ jobs:
         python-version: [3.7, 3.8]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-#    - name: Set up Django
-#      run: |
-#        cd jokesmith/
-#        ./manage.py migrate
-    - name: Install Redis
-      run: |
-        sudo apt-get install redis-server
-        sudo systemctl enable redis-server.service
-    - name: Install Selenium
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y unzip xvfb libxi6 libgconf-2-4
-        sudo apt-get install default-jdk
-        sudo curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add
-        sudo su -c "echo 'deb [arch=amd64]  http://dl.google.com/linux/chrome/deb/ stable main' >> /etc/apt/sources.list.d/google-chrome.list"
-        sudo apt-get -y update
-        sudo apt-get -y install google-chrome-stable
-        sudo wget https://chromedriver.storage.googleapis.com/2.41/chromedriver_linux64.zip
-        sudo unzip chromedriver_linux64.zip
-        sudo mv chromedriver /usr/bin/chromedriver
-        sudo chown root:root /usr/bin/chromedriver
-        sudo chmod +x /usr/bin/chromedriver
-    - name: Run Tests
-      run: |
-        export DATABASE_URL=postgres://user:pass@localhost:5432/test_db
-        export REDIS_URL=redis://127.0.0.1:6379
-        python manage.py migrate
-        python manage.py runserver &
-        python manage.py test
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      #    - name: Set up Django
+      #      run: |
+      #        cd jokesmith/
+      #        ./manage.py migrate
+      - name: Install Redis
+        run: |
+          sudo apt-get install redis-server
+          sudo systemctl enable redis-server.service
+      - name: Install Selenium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip xvfb libxi6 libgconf-2-4
+          sudo apt-get install default-jdk
+          sudo curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add
+          sudo su -c "echo 'deb [arch=amd64]  http://dl.google.com/linux/chrome/deb/ stable main' >> /etc/apt/sources.list.d/google-chrome.list"
+          sudo apt-get -y update
+          sudo apt-get -y install google-chrome-stable
+          sudo wget https://chromedriver.storage.googleapis.com/2.41/chromedriver_linux64.zip
+          sudo unzip chromedriver_linux64.zip
+          sudo mv chromedriver /usr/bin/chromedriver
+          sudo chown root:root /usr/bin/chromedriver
+          sudo chmod +x /usr/bin/chromedriver
+      - name: Run Tests
+        env:
+          DATABASE_URL: postgres://user:pass@localhost:5432/test_db
+          REDIS_URL: redis://127.0.0.1:6379
+        run: |
+          python manage.py migrate
+          python manage.py runserver &
+          python manage.py test
