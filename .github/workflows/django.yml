@@ -1,6 +1,5 @@
 name: Django CI
-env:
-  - REDIS_URL=redis://127.0.0.1:6379
+
 on:
   push:
     branches: [ master ]
@@ -50,5 +49,6 @@ jobs:
         sudo chmod +x /usr/bin/chromedriver
     - name: Run Tests
       run: |
+        export REDIS_URL=redis://127.0.0.1:6379
         python manage.py migrate
         python manage.py test
