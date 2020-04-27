@@ -35,6 +35,7 @@ jobs:
         sudo systemctl enable redis-server.service
     - name: Install Selenium
       run: |
+        sudo apt-get update
         sudo apt-get install -y unzip xvfb libxi6 libgconf-2-4
         sudo apt-get install default-jdk
         sudo curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add

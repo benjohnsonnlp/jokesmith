@@ -80,7 +80,7 @@ class WorkflowTests(TestCase):
             text.send_keys('response from ' + str(i))
             button.click()
 
-        input()  # for manual testing
+        # input()  # for manual testing
         for browser in browsers:
             browser.quit()
 
