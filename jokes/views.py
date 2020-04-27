@@ -71,10 +71,13 @@ def session(request, player_id, session_id):
 
 def get_question(request, player_id, session_id):
     player: Player = get_object_or_404(Player, pk=player_id)
-    response: Response =  player.get_unanswered_questions()[0]
+    unanswered_questions = player.get_unanswered_questions()
+    response: Response = None
+    if unanswered_questions:
+        response = unanswered_questions[0]
 
     ajax_response = {
-        "response": response.dict(),
-        "prompt": response.prompt.dict(),
+        "response": response.dict() if response else None,
+        "prompt": response.prompt.dict() if response else None,
     }
     return HttpResponse(json.dumps(ajax_response, indent=2))
