@@ -51,4 +51,5 @@ jobs:
       run: |
         export REDIS_URL=redis://127.0.0.1:6379
         python manage.py migrate
+        python manage.py runserver &
         python manage.py test
