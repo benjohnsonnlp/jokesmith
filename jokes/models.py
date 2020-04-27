@@ -69,7 +69,10 @@ class Prompt(models.Model):
     def random():
         max_id = Prompt.objects.all().aggregate(max_id=Max("id"))["max_id"]
         if not max_id:
-            raise ValueError("No prompts in DB")
+            # raise ValueError("No prompts in DB")
+            prompt = Prompt(text="Test prompt", author=None)
+            prompt.save()
+            return prompt
         while True:
             pk = randint(1, max_id)
             prompt = Prompt.objects.filter(pk=pk).first()
