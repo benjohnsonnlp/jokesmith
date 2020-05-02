@@ -51,7 +51,7 @@ class WorkflowTests(TestCase):
 
     def test_all(self):
         chrome_options = Options()
-        chrome_options.add_argument('--headless')
+        # chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         browsers = [
@@ -93,7 +93,15 @@ class WorkflowTests(TestCase):
             text.send_keys('response from ' + str(i))
             button.click()
 
-        # input()  # for manual testing
+        time.sleep(0.5)
+
+        for i, browser in enumerate(browsers):
+            button = browser.find_element_by_id('submitResponse')
+            text = browser.find_element_by_id('responseText')
+            text.send_keys('2nd response from ' + str(i))
+            button.click()
+
+        input()  # for manual testing
         for browser in browsers:
             browser.quit()
 

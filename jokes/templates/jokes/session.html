@@ -48,6 +48,12 @@
                 <input type="text" id="responseText" class="form-control response" placeholder="Type your response here"/>
                 <input type="submit" class="btn-primary" id="submitResponse"/>
             </div>
+            <div id="votingContainer" style="display: none">
+                <h3></h3>
+                <ul class="list-group">
+
+                </ul>
+            </div>
             <div id="waiting" style="display: none">
                 <h3>Waiting on other players...</h3>
             </div>
@@ -84,6 +90,9 @@
 <!--context js objects-->
 <script id="getQuestionURL">
     "{% url 'question' player.id session.id %}"
+</script>
+<script id="getVotingURL">
+    "{% url 'voting' player.id session.id %}"
 </script>
 
 {{ player.dict|json_script:"player" }}

@@ -8,6 +8,7 @@ from django.forms.models import model_to_dict
 class Session(models.Model):
     name = models.CharField(max_length=80)
     started = models.BooleanField(default=False)
+    status = models.CharField(max_length=80, default='start')
 
     def __str__(self):
         return self.name
@@ -23,11 +24,14 @@ class Session(models.Model):
             player = players[i]
             partner = players[(i + 1) % len(players)]
             prompt = Prompt.random()
+
             response = Response(player=player, prompt=prompt, session=self,
                                 text="")
+            print("Saving {}...".format(response))
             response.save()
             response = Response(player=partner, prompt=prompt, session=self,
                                 text="")
+            print("Saving {}...".format(response))
             response.save()
 
 

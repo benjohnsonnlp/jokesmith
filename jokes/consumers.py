@@ -78,6 +78,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
         # check if all are submitted
+        if await self.all_responses_submitted():
+            await self.send(text_data=json.dumps({
+                "type": "begin_voting",
+            }))
 
     async def prompt_submission(self, event):
         player: Player = await self.get_player(event['player'])
@@ -90,6 +94,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             print("Adding prompts {} to player {}".format(event['prompts'], player))
             if await self.record_prompts(event):
                 print("Broadcasting that all prompts are submitted")
+                await self.start_match()
                 await self.channel_layer.group_send(
                     self.room_group_name, {
                         "type": "all_prompts_submitted",
@@ -167,3 +172,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if not player.submitted_prompts:
                 all_submitted = False
         return all_submitted
+
+
+    @database_sync_to_async
+    def start_match(self):
+        self.session.build_responses()
+
+    @database_sync_to_async
+    def all_responses_submitted(self):
+        if not self.session.response_set.filter(text=""):
+            self.session.status = 'voting'
+            return True
+        return False

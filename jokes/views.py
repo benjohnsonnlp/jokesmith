@@ -81,3 +81,22 @@ def get_question(request, player_id, session_id):
         "prompt": response.prompt.dict() if response else None,
     }
     return HttpResponse(json.dumps(ajax_response, indent=2))
+
+
+def get_voting(request, player_id, session_id):
+    player: Player = get_object_or_404(Player, pk=player_id)
+    session: Session = get_object_or_404(Session, pk=session_id)
+
+    can_vote = True
+    response = session.response_set.all().first()
+    # get all the responses with the same prompt and session as ^
+    responses = response.prompt.response_set.filter(session=session)
+    for r in responses:
+        if r.player == player:
+            can_vote = False
+    ajax_response = {
+        "prompt": response.prompt.dict(),
+        "responses": [r.dict() for r in responses],
+        "can_vote": can_vote,
+    }
+    return HttpResponse(json.dumps(ajax_response, indent=2))

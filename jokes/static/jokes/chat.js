@@ -1,6 +1,7 @@
 let player = JSON.parse(document.getElementById('player').textContent);
 let session = JSON.parse(document.getElementById('session').textContent);
 let getQuestionURL = JSON.parse(document.getElementById('getQuestionURL').textContent);
+let getVotingURL = JSON.parse(document.getElementById('getVotingURL').textContent);
 
 if (window.location.protocol === 'https:') {
     protocol = 'wss:';
@@ -59,6 +60,30 @@ function start_match(data) {
     });
 }
 
+function displayQuestion(msg) {
+    console.log("Received response from getQuestion" + msg)
+    msg = JSON.parse(msg);
+    if (!msg.response) {
+        $('#promptResponse').css('display', 'none');
+        $('#waiting').css('display', 'initial');
+    } else {
+        let prompt = $('#promptResponse .prompt');
+        prompt.text(msg.prompt.text);
+        $('#submitResponse').click(function (evt) {
+            submitResponse()
+        });
+        let text = $('#responseText');
+
+        text.attr("response_id", msg.response.id);
+        text.val('');
+        // text.click(function (event) {
+        //     if (event.keyCode == 13) {
+        //         submitResponse();
+        //     }
+        // });
+    }
+}
+
 function submitResponse() {
     $('#promptResponse').css('display', 'none');
     $('#waiting').css('display', 'initial');
@@ -80,23 +105,59 @@ function pose_questions(data) {
         data: {
             player_id: player.id
         }
-    }).done(function (msg) {
-        console.log("Received response from getQuestion" + msg)
-        msg = JSON.parse(msg);
-        let prompt = $('#promptResponse .prompt');
-        prompt.text(msg.prompt.text);
-        $('#submitResponse').click(function (evt) {
-            submitResponse()
-        });
-        let text = $('#responseText');
+    }).done(displayQuestion);
+}
 
-        text.attr("response_id", msg.response.id);
-        text.click(function (event) {
-            if (event.keyCode == 13) {
-                submitResponse();
-            }
-        });
-    });
+// {
+//   "prompt": {
+//     "id": 132,
+//     "text": "Unknown Baldwin brother",
+//     "author": 2
+//   },
+//   "responses": [
+//     {
+//       "id": 334,
+//       "player": 14,
+//       "prompt": 132,
+//       "session": 82,
+//       "text": "response from 0"
+//     },
+//     {
+//       "id": 335,
+//       "player": 16,
+//       "prompt": 132,
+//       "session": 82,
+//       "text": "response from 2"
+//     },
+//   ],
+//   "can_vote": false
+// }
+
+function displayVoting(msg) {
+    console.log("Received response from getVoting" + msg)
+    msg = JSON.parse(msg);
+    $('#votingContainer h3').text(msg.prompt.text);
+    let list = $('#votingContainer ul');
+    list.html('');
+    for (i in msg.responses) {
+        let response = msg.responses[i];
+        list.append(`
+            <li class="list-group-item" responseId="${response.id}">${response.text}</li>
+        `);
+    }
+}
+
+function begin_voting(data) {
+    $('#promptResponse').css('display', 'none');
+    $('#waiting').css('display', 'none');
+    $('#votingContainer').css('display', 'initial');
+    $.ajax({
+        method: 'GET',
+        url: getVotingURL,
+        data: {
+            player_id: player.id
+        }
+    }).done(displayVoting);
 }
 
 function user_joined(data) {
@@ -113,6 +174,7 @@ function handle_game_events(data) {
         "all_prompts_submitted": pose_questions,
         "user_joined": user_joined,
         "next_question": pose_questions,
+        "begin_voting": begin_voting,
     };
     if (data.type in handlers) {
         handlers[data.type](data);
