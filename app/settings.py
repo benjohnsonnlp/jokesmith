@@ -62,7 +62,6 @@ if DEBUG:
     MIDDLEWARE = MIDDLEWARE
 
 
-
 INTERNAL_IPS = ['127.0.0.1']  # Allow DjDT to show up.
 
 TEMPLATES = [
@@ -136,7 +135,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 import django_heroku
 django_heroku.settings(locals())
-del DATABASES['default']['OPTIONS']['sslmode']
+if 'options' in DATABASES['default']:
+    del DATABASES['default']['OPTIONS']['sslmode']
 
 # Channels
 ASGI_APPLICATION = 'app.routing.application'
