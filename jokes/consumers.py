@@ -4,7 +4,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.db import close_old_connections
 
-from jokes.models import Session, Player, Prompt, Response
+from jokes.models import Session, Player, Prompt, Response, Vote
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -53,6 +53,31 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def user_joined(self, event):
         # Broadcast back to clients
         await self.send(text_data=json.dumps(event))
+
+    async def display_results(self, event):
+        prompt, votes = await self.get_voting_results(event['response_id'])
+        await self.send(text_data=json.dumps(
+            {
+                "type": "display_results",
+                "prompt": prompt.dict(),
+                "results": votes
+            },
+            indent=2
+        ))
+
+    async def vote_submission(self, event):
+        player: Player = await self.get_player(event['player'])
+        if player == self.player:
+            await self.add_vote(event)
+            if await self.all_voted():
+                await self.reset_voting_status()
+
+                await self.channel_layer.group_send(
+                    self.room_group_name, {
+                        "type": "display_results",
+                        "response_id": event['response_id']
+                    })
+
 
     async def player_readied(self, event):
         await self.ready_player(event["username"])
@@ -111,7 +136,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         response.text = event['text']
         response.save()
         return self.player.get_unanswered_questions()
-
 
     @database_sync_to_async
     def ready_player(self, player_name):
@@ -173,7 +197,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 all_submitted = False
         return all_submitted
 
-
     @database_sync_to_async
     def start_match(self):
         self.session.build_responses()
@@ -182,5 +205,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def all_responses_submitted(self):
         if not self.session.response_set.filter(text=""):
             self.session.status = 'voting'
+            self.reset_voting_status()
             return True
         return False
+
+    @database_sync_to_async
+    def add_vote(self, event):
+        self.player.voted = True
+        self.player.save()
+        vote: Vote = Vote(player=self.player, response_id=event['response_id'], session=self.session)
+        vote.save()
+
+    @database_sync_to_async
+    def all_voted(self):
+        for player in self.session.player_set.all():
+            if not player.voted:
+                return False
+        return True
+
+    @database_sync_to_async
+    def reset_voting_status(self):
+        for player in self.session.player_set.all():
+            player.voted = False
+            player.save()
+
+    @database_sync_to_async
+    def get_voting_results(self, response_id):
+        prompt: Prompt  = Response.objects.get(pk=response_id).prompt
+        votes = []
+        for response in prompt.response_set.filter(session=self.session):
+            votes.append({
+                "response": response.dict(),
+                "votes": [v.dict() for v in response.vote_set.all()]
+            })
+        return prompt, votes

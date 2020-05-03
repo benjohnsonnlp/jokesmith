@@ -101,7 +101,6 @@ class WorkflowTests(TestCase):
             text.send_keys('2nd response from ' + str(i))
             button.click()
 
-        input()  # for manual testing
         for browser in browsers:
             browser.quit()
 

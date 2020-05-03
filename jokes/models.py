@@ -40,6 +40,7 @@ class Player(models.Model):
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True)
     is_ready = models.BooleanField(default=False)
     submitted_prompts = models.BooleanField(default=False)
+    voted = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("name", "session")
@@ -99,3 +100,12 @@ class Response(models.Model):
             self.text,
             self.session.name,
         )
+
+
+class Vote(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    response = models.ForeignKey(Response, on_delete=models.CASCADE)
+    session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True)
+
+    def dict(self):
+        return model_to_dict(self)

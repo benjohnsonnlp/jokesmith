@@ -43,16 +43,19 @@
             {% elif phase == 'waiting' %}
                 <h3>Sorry, we already got started. Hang out and watch for the results here!</h3>
             {% endif %}
-            <div id="promptResponse" style="display: none">
+            <div id="promptResponse" class="row" style="display: none">
                 <h3 class="prompt"></h3>
-                <input type="text" id="responseText" class="form-control response" placeholder="Type your response here"/>
+                <input type="text" id="responseText" class="form-control response"
+                       placeholder="Type your response here"/>
                 <input type="submit" class="btn-primary" id="submitResponse"/>
             </div>
-            <div id="votingContainer" style="display: none">
+            <div id="votingContainer" class="row" style="display: none">
                 <h3></h3>
-                <ul class="list-group">
+                <div class="col btn-group btn-group-toggle row" data-toggle="buttons">
 
-                </ul>
+                </div>
+                <div class="w-100"></div>
+                <input type="button" value="Vote!" class="btn-primary" id="votingSubmit"/>
             </div>
             <div id="waiting" style="display: none">
                 <h3>Waiting on other players...</h3>
@@ -104,6 +107,9 @@
         crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
         integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
 
 <!--My includes-->

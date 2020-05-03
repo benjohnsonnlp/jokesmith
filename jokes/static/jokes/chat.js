@@ -85,8 +85,8 @@ function displayQuestion(msg) {
 }
 
 function submitResponse() {
-    $('#promptResponse').css('display', 'none');
-    $('#waiting').css('display', 'initial');
+    $('#promptResponse').hide();
+    $('#waiting').show();
     let textfield = $('#responseText');
     chatSocket.send(JSON.stringify({
         "type": "response_submission",
@@ -97,8 +97,8 @@ function submitResponse() {
 }
 
 function pose_questions(data) {
-    $('#promptResponse').css('display', 'initial');
-    $('#waiting').css('display', 'none');
+    $('#promptResponse').show();
+    $('#waiting').hide();
     $.ajax({
         method: 'GET',
         url: getQuestionURL,
@@ -108,6 +108,19 @@ function pose_questions(data) {
     }).done(displayQuestion);
 }
 
+function submitVote() {
+    let selected = $('#votingContainer .active input');
+    chatSocket.send(JSON.stringify({
+        "type": "vote_submission",
+        "player": player.id,
+        "response_id": selected.attr("responseid")
+    }));
+    $('#votingContainer').hide();
+    $('#waiting').show();
+}
+
+
+// Example ballot
 // {
 //   "prompt": {
 //     "id": 132,
@@ -137,20 +150,26 @@ function displayVoting(msg) {
     console.log("Received response from getVoting" + msg)
     msg = JSON.parse(msg);
     $('#votingContainer h3').text(msg.prompt.text);
-    let list = $('#votingContainer ul');
+    let list = $('#votingContainer .btn-group');
     list.html('');
     for (i in msg.responses) {
         let response = msg.responses[i];
         list.append(`
-            <li class="list-group-item" responseId="${response.id}">${response.text}</li>
+            <label class="btn btn-secondary btn-block">
+                <input type="radio" name="options" 
+                       id="option1" autocomplete="off" responseId="${response.id}"> 
+                ${response.text}
+            </label>
+            <div class="w-100"></div>
         `);
     }
+    $('#votingSubmit').off('click').click(submitVote);
 }
 
 function begin_voting(data) {
-    $('#promptResponse').css('display', 'none');
-    $('#waiting').css('display', 'none');
-    $('#votingContainer').css('display', 'initial');
+    $('#promptResponse').hide();
+    $('#waiting').hide();
+    $('#votingContainer').show();
     $.ajax({
         method: 'GET',
         url: getVotingURL,
