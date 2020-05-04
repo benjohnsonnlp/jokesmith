@@ -138,7 +138,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 import django_heroku
 django_heroku.settings(locals())
-if 'options' in DATABASES['default']:
+if 'OPTIONS' in DATABASES['default']:
     del DATABASES['default']['OPTIONS']['sslmode']
 
 # Channels
