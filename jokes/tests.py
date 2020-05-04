@@ -2,17 +2,35 @@ from contextlib import contextmanager
 import time
 
 from channels.testing import ChannelsLiveServerTestCase
-from django.test import override_settings
+from django.test import override_settings, TestCase
 from django.urls import reverse
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
+
+from jokes.models import Prompt
+
+
+class PromptTestCase(TestCase):
+
+    fixtures = ['prompts.json']
+
+    def test_sampling(self):
+        sample_ids = set(p.pk for p in Prompt.random_set(5))
+        self.assertEqual(len(sample_ids), 5)
+        self.assertTrue(sample_ids <= set(range(1, 7)))
+
+        sample_ids = [p.pk for p in Prompt.random_set(10)]
+        self.assertEqual(len(sample_ids), 10)
+        self.assertTrue(set(sample_ids) <= set(range(1, 7)))
 
 
 @override_settings(DEBUG=True)
 class WorkflowTests(ChannelsLiveServerTestCase):
 
     SLEEP_TIME = 2.0
+
+    fixtures = ['prompts.json']
 
     @contextmanager
     def browser(self, view_name: str):
@@ -22,7 +40,7 @@ class WorkflowTests(ChannelsLiveServerTestCase):
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         browser = webdriver.Chrome(chrome_options=chrome_options)
-        browser.implicitly_wait(10)
+
         browser.get(url)
         yield browser
         browser.quit()

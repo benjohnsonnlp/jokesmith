@@ -1,0 +1,50 @@
+[
+{
+    "model": "jokes.prompt",
+    "pk": 1,
+    "fields": {
+        "text": "What's your quip for prompt #1?",
+        "author": null
+    }
+},
+{
+    "model": "jokes.prompt",
+    "pk": 2,
+    "fields": {
+        "text": "What's your quip for prompt #2?",
+        "author": null
+    }
+},
+{
+    "model": "jokes.prompt",
+    "pk": 3,
+    "fields": {
+        "text": "What's your quip for prompt #3?",
+        "author": null
+    }
+},
+{
+    "model": "jokes.prompt",
+    "pk": 4,
+    "fields": {
+        "text": "What's your quip for prompt #4?",
+        "author": null
+    }
+},
+{
+    "model": "jokes.prompt",
+    "pk": 5,
+    "fields": {
+        "text": "What's your quip for prompt #5?",
+        "author": null
+    }
+},
+{
+    "model": "jokes.prompt",
+    "pk": 6,
+    "fields": {
+        "text": "What's your quip for prompt #6?",
+        "author": null
+    }
+}
+]

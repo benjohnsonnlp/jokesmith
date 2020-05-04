@@ -78,7 +78,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         "response_id": event['response_id']
                     })
 
-
     async def player_readied(self, event):
         await self.ready_player(event["username"])
 

@@ -52,13 +52,11 @@ class Command(BaseCommand):
                 button.click()
             self.sleep()
 
-            browser = browsers[0]
-            button = browser.find_element_by_id('readyButton')
-            self.stdout.write(self.style.SUCCESS("Submitting prompts..."))
+            self.stdout.write(self.style.SUCCESS("Submitting blank prompts..."))
+
             for browser in browsers:
                 button = browser.find_element_by_id('submitPrompt')
                 button.click()
-
             self.sleep()
 
             self.stdout.write(self.style.SUCCESS("Submitting responses..."))
@@ -67,7 +65,6 @@ class Command(BaseCommand):
                 text = browser.find_element_by_id('responseText')
                 text.send_keys('response from ' + str(i))
                 button.click()
-
             self.sleep()
 
             for i, browser in enumerate(browsers):
@@ -80,7 +77,8 @@ class Command(BaseCommand):
             input(">")
 
         except Exception as exc:
-            self.stdout.write(self.style.ERROR(f"Something went wrong:\n{exc}"))
+
+            self.stdout.write(self.style.ERROR(f"Something went wrong:\n{type(exc)}:{exc}"))
 
         for browser in browsers:
             browser.quit()

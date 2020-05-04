@@ -1,4 +1,5 @@
-from random import shuffle, randint
+from random import shuffle, randint, sample
+from typing import List
 
 from django.db import models
 from django.db.models import Max
@@ -20,11 +21,10 @@ class Session(models.Model):
         # for now, randomly get prompts
         players = list(self.player_set.all())
         shuffle(players)
-        for i in range(len(players)):
-            player = players[i]
+        prompts = Prompt.random_set(len(players))
+        for i, player in enumerate(players):
             partner = players[(i + 1) % len(players)]
-            prompt = Prompt.random()
-
+            prompt = prompts[i]
             response = Response(player=player, prompt=prompt, session=self,
                                 text="")
             print("Saving {}...".format(response))
@@ -60,7 +60,7 @@ class Player(models.Model):
 
 class Prompt(models.Model):
     text = models.TextField()
-    author = models.ForeignKey(Player, on_delete=models.SET_NULL, null=True)
+    author = models.ForeignKey(Player, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         if len(self.text) > 32:
@@ -71,7 +71,25 @@ class Prompt(models.Model):
         return model_to_dict(self)
 
     @staticmethod
+    def random_set(n: int) -> List["Prompt"]:
+        """
+        Return a random set of ``n`` prompts. Use when we need to do "sampling without replacement." Note that if ``n``
+        is larger than the available prompts, what we do have will be replicated until we have all prompts we need.
+        """
+        all_ids = list(Prompt.objects.all().values_list("id", flat=True))
+        if not all_ids:
+            raise ValueError("Need at least one prompt to be stored in the DB.")
+        sample_ids = sample(all_ids, min(n, len(all_ids)))
+        prompts = list(Prompt.objects.filter(id__in=sample_ids))
+        for i in range(n - len(prompts)):
+            prompts.append(prompts[i])
+        return prompts
+
+    @staticmethod
     def random():
+        """
+        Get a single random prompt.
+        """
         max_id = Prompt.objects.all().aggregate(max_id=Max("id"))["max_id"]
         if not max_id:
             # raise ValueError("No prompts in DB")
@@ -95,10 +113,12 @@ class Response(models.Model):
         return model_to_dict(self)
 
     def __str__(self):
+        player_name = self.player.name if self.player else "unknown-player"
+        session_name = self.session.name if self.session else "unknown-session"
         return "Response for player {} with text '{}' for session {}".format(
-            self.player.name,
+            player_name,
             self.text,
-            self.session.name,
+            session_name,
         )
 
 
