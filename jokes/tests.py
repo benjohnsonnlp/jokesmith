@@ -25,8 +25,7 @@ class PromptTestCase(TestCase):
         self.assertTrue(set(sample_ids) <= set(range(1, 7)))
 
 
-@override_settings(DEBUG=True)
-class WorkflowTests(ChannelsLiveServerTestCase):
+class WorkflowTests(TestCase):
 
     SLEEP_TIME = 2.0
 
@@ -34,7 +33,7 @@ class WorkflowTests(ChannelsLiveServerTestCase):
 
     @contextmanager
     def browser(self, view_name: str):
-        url = "{}{}".format(self.live_server_url, reverse(view_name))
+        url = "{}{}".format('http://localhost:8000', reverse(view_name))
         chrome_options = Options()
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
