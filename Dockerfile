@@ -1,6 +1,5 @@
 FROM python:3.7-slim
-ENV PYTHONUNBUFFERED=1 DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 PYTHONPATH=$PYTHONPATH:/jokesmith/ \
-    DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
+ENV PYTHONUNBUFFERED=1 DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 PYTHONPATH=$PYTHONPATH:/jokesmith/
 RUN mkdir /jokesmith
 WORKDIR /jokesmith
 COPY requirements.txt /jokesmith/

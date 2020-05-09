@@ -78,7 +78,16 @@ class Prompt(models.Model):
         """
         all_ids = list(Prompt.objects.all().values_list("id", flat=True))
         if not all_ids:
-            raise ValueError("Need at least one prompt to be stored in the DB.")
+            starter_prompts = [
+                "Weird thing to say to in-laws",
+                "Rejected pop-tart flavors",
+                "Worst news to get via carrier pigeon",
+            ]
+            for prompt in starter_prompts:
+                p = Prompt(text=prompt, author=None)
+                p.save()
+            all_ids = list(Prompt.objects.all().values_list("id", flat=True))
+
         sample_ids = sample(all_ids, min(n, len(all_ids)))
         prompts = list(Prompt.objects.filter(id__in=sample_ids))
         for i in range(n - len(prompts)):

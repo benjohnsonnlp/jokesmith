@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  redis:
+    image: redis
+  web:
+    build: .
+    environment:
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/jokesmith
+    ports:
+      - "8000:8000"
+    depends_on:
+      - migration
+  migration:
+    build: .
+    environment:
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
+    command: python manage.py migrate
+    volumes:
+      - .:/jokesmith
+    depends_on:
+      - db
+      - redis
