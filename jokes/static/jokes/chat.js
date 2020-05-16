@@ -155,10 +155,11 @@ function displayVoting(msg) {
     for (i in msg.responses) {
         let response = msg.responses[i];
         list.append(`
-            <label class="btn btn-secondary btn-block">
                 <input type="radio" name="options" 
-                       id="option1" autocomplete="off" responseId="${response.id}"> 
+                       class="voteRadio" autocomplete="off" responseId="${response.id}"> 
                 ${response.text}
+            <label class="btn btn-secondary btn-block">
+                
             </label>
             <div class="w-100"></div>
         `);
@@ -186,6 +187,48 @@ function user_joined(data) {
         `);
     }
 }
+//  Results look like
+//  {
+//   "type": "display_results",
+//   "prompt": {
+//     "id": 1,
+//     "text": "Weird thing to say to in-laws",
+//     "author": null
+//   },
+//   "results": [
+//     {
+//       "response": {
+//         "id": 13,
+//         "player": 2,
+//         "prompt": 1,
+//         "session": 4,
+//         "text": "response from 0"
+//       },
+//       "votes": [
+//         {
+//           "id": 4,
+//           "player": 3,
+//           "response": 13,
+//           "session": 4
+//         }
+//       ]
+//     },
+//     {
+//       "response": {
+//         "id": 14,
+//         "player": 4,
+//         "prompt": 1,
+//         "session": 4,
+//         "text": "response from 2"
+//       },
+//       "votes": []
+//     }
+//   ]
+// }
+
+function display_results(data) {
+
+}
 
 function handle_game_events(data) {
     const handlers = {
@@ -194,6 +237,7 @@ function handle_game_events(data) {
         "user_joined": user_joined,
         "next_question": pose_questions,
         "begin_voting": begin_voting,
+        "display_results": display_results
     };
     if (data.type in handlers) {
         handlers[data.type](data);

@@ -73,6 +73,15 @@ class Command(BaseCommand):
                 text.send_keys('2nd response from ' + str(i))
                 button.click()
 
+            self.sleep()
+
+            for i, browser in enumerate(browsers):
+                button = browser.find_element_by_class_name('voteRadio')
+                button.click()
+
+                button = browser.find_element_by_id('votingSubmit')
+                button.click()
+
             self.stdout.write(self.style.SUCCESS("Okay, we're all done! Hit enter to quit."))
             input(">")
 

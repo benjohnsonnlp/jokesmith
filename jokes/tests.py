@@ -109,3 +109,12 @@ class WorkflowTests(TestCase):
                 text = browser.find_element_by_id('responseText')
                 text.send_keys('2nd response from ' + str(i))
                 button.click()
+
+            time.sleep(self.SLEEP_TIME)
+
+            for i, browser in enumerate(browsers):
+                button = browser.find_element_by_class_name('voteRadio')
+                button.click()
+
+                button = browser.find_element_by_id('votingSubmit')
+                button.click()
