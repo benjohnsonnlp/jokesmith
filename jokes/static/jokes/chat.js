@@ -36,9 +36,13 @@ function send_message(title, body) {
     }
     let message = '<div class="card">\n';
     if (title) {
-        message += '<div class="card-header">' + title + '</div>\n';
+        message += ('<div class="card-header">' + title + '</div>\n'
+            + '<div class="card-body">' + body + "</div></div>");
     }
-    message += '<div class="card-body">' + body + "</div></div>";
+    else {
+        message += '<div class="card-body notice">' + body + "</div></div>";
+    }
+
     let log = $('#chat-log');
     log.append(message);
 
