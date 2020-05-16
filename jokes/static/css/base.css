@@ -6,3 +6,10 @@ body {
 .logotype {
     font-family: 'Luckiest Guy';
 }
+
+
+.btn-primary {
+    color: #fff;
+    background-color: #00b8a9;
+    border-color: #00b8a9;
+}

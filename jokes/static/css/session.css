@@ -1,0 +1,17 @@
+body {
+  background-color: #f6416c;
+ }
+
+
+ .top-row {
+    background: #f8f3d4;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding:5px
+
+ }
+
+.chat-area {
+    background: #ffde7d;
+    padding:5px
+}
