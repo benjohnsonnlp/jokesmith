@@ -71,7 +71,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if player == self.player:
             await self.add_vote(event)
             if await self.all_voted():
-                await self.reset_voting_status()
+                # await self.reset_voting_status()
 
                 await self.channel_layer.group_send(
                     self.room_group_name, {

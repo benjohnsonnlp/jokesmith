@@ -137,4 +137,6 @@ class Vote(models.Model):
     session = models.ForeignKey(Session, on_delete=models.SET_NULL, null=True)
 
     def dict(self):
-        return model_to_dict(self)
+        output = model_to_dict(self)
+        output['player_name'] = self.player.name
+        return output

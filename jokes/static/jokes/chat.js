@@ -237,15 +237,31 @@ function display_results(data) {
 
 
     $('#resultsContainer h3').text(data.prompt.text);
-    let list = $('#resultsContainer ul');
+    let list = $('#resultsContainer > ul');
     list.html('');
     for (let i in data.results) {
         let result = data.results[i];
-        list.append(`
+        let html = '';
+        html += `
             <li class="list-group-item">
                  ${result.response.text} - ${result.votes.length} votes
+                 <ul class="list-group">
+        `;
+
+        result.votes.forEach(function(vote, index) {
+           html += `
+                    <li class="list-group-item">
+                       ${vote.player_name}
+                    </li>
+           `;
+        });
+
+        html += `
+                </ul>
             </li>
-        `);
+        `;
+
+        list.append(html);
     }
 }
 
