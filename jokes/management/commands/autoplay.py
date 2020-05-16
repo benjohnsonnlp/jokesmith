@@ -75,6 +75,8 @@ class Command(BaseCommand):
 
             self.sleep()
 
+            self.stdout.write(self.style.SUCCESS("Submitting votes..."))
+
             for i, browser in enumerate(browsers):
                 button = browser.find_element_by_class_name('voteRadio')
                 button.click()
@@ -88,6 +90,7 @@ class Command(BaseCommand):
         except Exception as exc:
 
             self.stdout.write(self.style.ERROR(f"Something went wrong:\n{type(exc)}:{exc}"))
+            input("Press enter when you're done >")
 
         for browser in browsers:
             browser.quit()
@@ -98,5 +101,8 @@ class Command(BaseCommand):
         except Session.DoesNotExist:
             pass
         else:
+            for player in session.player_set.all():
+                player.session = None
+                player.save()
             session.delete()
             self.stdout.write(self.style.SUCCESS(f'Test session "{session_name}" removed.'))

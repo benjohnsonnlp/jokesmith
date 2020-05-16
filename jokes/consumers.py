@@ -16,6 +16,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.player: Player = await self.get_player(player_name)
         self.room_group_name = 'chat_%s' % self.room_name
 
+        await self.reset_voting_status()
         # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -103,6 +104,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # check if all are submitted
         if await self.all_responses_submitted():
+            await self.reset_voting_status()
             await self.send(text_data=json.dumps({
                 "type": "begin_voting",
             }))
@@ -141,6 +143,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         close_old_connections()
         player: Player = Player.objects.get(name=player_name)
         player.is_ready = True
+        player.voted = False
         player.save()
 
     @database_sync_to_async
@@ -204,7 +207,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def all_responses_submitted(self):
         if not self.session.response_set.filter(text=""):
             self.session.status = 'voting'
-            self.reset_voting_status()
             return True
         return False
 
@@ -224,13 +226,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def reset_voting_status(self):
+        print("Resetting players to voted = False...")
         for player in self.session.player_set.all():
             player.voted = False
             player.save()
+            print("{} reset.".format(player))
+
 
     @database_sync_to_async
     def get_voting_results(self, response_id):
-        prompt: Prompt  = Response.objects.get(pk=response_id).prompt
+        prompt: Prompt = Response.objects.get(pk=response_id).prompt
         votes = []
         for response in prompt.response_set.filter(session=self.session):
             votes.append({
