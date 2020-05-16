@@ -171,6 +171,7 @@ function displayVoting(msg) {
 
 function begin_voting(data) {
     $('#promptResponse').hide();
+    $('#resultsContainer').hide();
     $('#waiting').hide();
     $('#votingContainer').show();
     $.ajax({

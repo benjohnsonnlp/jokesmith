@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from channels.db import database_sync_to_async
@@ -65,6 +66,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             },
             indent=2
         ))
+
+        await asyncio.sleep(15)
+        await self.reset_voting_status()
+        await self.remove_responses(prompt)
+        await self.send(text_data=json.dumps({
+            "type": "begin_voting",
+        }, indent=2))
 
     async def vote_submission(self, event):
         player: Player = await self.get_player(event['player'])
@@ -232,7 +240,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             player.save()
             print("{} reset.".format(player))
 
-
     @database_sync_to_async
     def get_voting_results(self, response_id):
         prompt: Prompt = Response.objects.get(pk=response_id).prompt
@@ -243,3 +250,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "votes": [v.dict() for v in response.vote_set.all()]
             })
         return prompt, votes
+
+    @database_sync_to_async
+    def remove_responses(self, prompt):
+        for response in prompt.response_set.filter(session=self.session):
+            response.delete()
+
