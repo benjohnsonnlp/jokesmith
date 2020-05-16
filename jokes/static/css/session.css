@@ -30,3 +30,7 @@ h1 {
 .card-body {
    padding: .50rem 1.25rem;
 }
+
+.card-body.notice {
+    font-style: italic;
+}
