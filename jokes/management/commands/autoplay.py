@@ -13,7 +13,7 @@ from jokes.models import Session
 class Command(BaseCommand):
 
     help = 'Use selenium to script a session among three imaginary players.'
-    sleep_time = 5.0
+    sleep_time = 1.0
 
     def get_browsers(self):
         self.stdout.write(self.style.SUCCESS("Starting up browsers..."))
