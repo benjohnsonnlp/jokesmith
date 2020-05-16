@@ -109,7 +109,7 @@ function pose_questions(data) {
 }
 
 function submitVote() {
-    let selected = $('#votingContainer .active input');
+    let selected = $('#votingContainer input:checked');
     chatSocket.send(JSON.stringify({
         "type": "vote_submission",
         "player": player.id,
@@ -150,18 +150,20 @@ function displayVoting(msg) {
     console.log("Received response from getVoting" + msg)
     msg = JSON.parse(msg);
     $('#votingContainer h3').text(msg.prompt.text);
-    let list = $('#votingContainer .btn-group');
+    let list = $('#votingContainer .group');
     list.html('');
     for (i in msg.responses) {
         let response = msg.responses[i];
         list.append(`
-                <input type="radio" name="options" 
-                       class="voteRadio" autocomplete="off" responseId="${response.id}"> 
-                ${response.text}
-            <label class="btn btn-secondary btn-block">
+            <div class="form-check">
+                <input type="radio" name="voteOptions" 
+                       class="form-check-input voteRadio" responseId="${response.id}"> 
                 
-            </label>
-            <div class="w-100"></div>
+                <label class="form-check-label">
+                    ${response.text}
+                </label>
+            
+            </div>
         `);
     }
     $('#votingSubmit').off('click').click(submitVote);
@@ -187,6 +189,7 @@ function user_joined(data) {
         `);
     }
 }
+
 //  Results look like
 //  {
 //   "type": "display_results",
@@ -227,7 +230,23 @@ function user_joined(data) {
 // }
 
 function display_results(data) {
+    $('#promptResponse').hide();
+    $('#waiting').hide();
+    $('#votingContainer').hide();
+    $('#resultsContainer').show();
 
+
+    $('#resultsContainer h3').text(data.prompt.text);
+    let list = $('#resultsContainer ul');
+    list.html('');
+    for (let i in data.results) {
+        let result = data.results[i];
+        list.append(`
+            <li class="list-group-item">
+                 ${result.response.text} - ${result.votes.length} votes
+            </li>
+        `);
+    }
 }
 
 function handle_game_events(data) {
