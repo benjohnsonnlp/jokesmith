@@ -1,10 +1,11 @@
 import json
 
+from django.db import transaction
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 
-from .models import Player, Session, Prompt, Response
+from .models import Player, Session, Response
 
 
 def index(request):
@@ -40,27 +41,27 @@ def add_session(request):
 
 def session(request, player_id, session_id):
     player: Player = get_object_or_404(Player, pk=player_id)
-    try:
-        session: Session = Session.objects.get(pk=session_id)
-    except Session.DoesNotExist:
-        return HttpResponseRedirect(reverse("landing", args=[player.id]))
-    phase = ''
-    if player.session == session:
-        if player.submitted_prompts:
-            phase = "questions"
-        elif player.is_ready and session.started:
-            phase = 'prompts'
-        elif player.is_ready:
-            phase = 'readied'
+    with transaction.atomic():
+        try:
+            session: Session = Session.objects.get(pk=session_id)
+        except Session.DoesNotExist:
+            return HttpResponseRedirect(reverse("landing", args=[player.id]))
+        if player.session == session:
+            if player.submitted_prompts:
+                phase = "questions"
+            elif player.is_ready and session.started:
+                phase = 'prompts'
+            elif player.is_ready:
+                phase = 'readied'
+            else:
+                phase = 'start'
         else:
-            phase = 'start'
-    else:
-        if session.started:
-            phase = 'waiting'
-        else:
-            phase = 'start'
-        player.session = session
-        player.save()
+            if session.started:
+                phase = 'waiting'
+            else:
+                phase = 'start'
+            player.session = session
+            player.save()
     return render(request, 'jokes/session.html', {
         'session': session,
         'phase': phase,

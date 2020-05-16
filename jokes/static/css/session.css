@@ -1,7 +1,10 @@
 body {
-  background-color: #f6416c;
+  /* background-color: #f6416c; */
  }
 
+h1 {
+
+}
 
  .top-row {
     background: #f8f3d4;
@@ -14,4 +17,16 @@ body {
 .chat-area {
     background: #ffde7d;
     padding:5px
+}
+
+.card-header {
+    padding: .20rem 1.25rem;
+    font-size: 13px;
+
+}
+
+.card-header:after { content:":";}
+
+.card-body {
+   padding: .50rem 1.25rem;
 }
