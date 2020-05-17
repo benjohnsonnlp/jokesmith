@@ -75,6 +75,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "begin_voting",
             }, indent=2))
         else:
+            await self.reset_players()
             await self.send(text_data=json.dumps({
                 "type": "reset_session",
             }, indent=2))
@@ -270,8 +271,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.session.status = 'start'
         self.session.started = False
         self.session.save()
+        print("Resetting players for new round...")
         for player in self.session.player_set.all():
-            print("Resetting players for new round...")
             player.voted = False
             player.is_ready = False
             player.submitted_prompts = False
