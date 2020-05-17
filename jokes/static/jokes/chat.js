@@ -38,8 +38,7 @@ function send_message(title, body) {
     if (title) {
         message += ('<div class="card-header">' + title + '</div>\n'
             + '<div class="card-body">' + body + "</div></div>");
-    }
-    else {
+    } else {
         message += '<div class="card-body notice">' + body + "</div></div>";
     }
 
@@ -253,8 +252,8 @@ function display_results(data) {
                  <ul class="list-group">
         `;
 
-        result.votes.forEach(function(vote, index) {
-           html += `
+        result.votes.forEach(function (vote, index) {
+            html += `
                     <li class="list-group-item">
                        ${vote.player_name}
                     </li>
@@ -270,6 +269,14 @@ function display_results(data) {
     }
 }
 
+function reset_session(data) {
+    $('#promptResponse').hide();
+    $('#waiting').hide();
+    $('#votingContainer').hide();
+    $('#resultsContainer').hide();
+    $('#readyButton').show();
+}
+
 function handle_game_events(data) {
     const handlers = {
         "start_match": start_match,
@@ -277,7 +284,8 @@ function handle_game_events(data) {
         "user_joined": user_joined,
         "next_question": pose_questions,
         "begin_voting": begin_voting,
-        "display_results": display_results
+        "display_results": display_results,
+        "reset_session": reset_session
     };
     if (data.type in handlers) {
         handlers[data.type](data);
@@ -320,7 +328,7 @@ document.querySelector('#chat-message-input').onkeyup = function (e) {
 
 
 $('#readyButton').click(function (e) {
-    $('#readyButton').css('display', 'none');
+    $('#readyButton').hide();
     chatSocket.send(JSON.stringify({
         "type": "player_readied",
         "username": player.name

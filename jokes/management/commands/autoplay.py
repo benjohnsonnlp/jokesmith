@@ -27,8 +27,8 @@ class Command(BaseCommand):
             webdriver.Chrome(chrome_options=chrome_options),
         )
 
-    def sleep(self):
-        time.sleep(self.sleep_time)
+    def sleep(self, sleep_time=None):
+        time.sleep(self.sleep_time if not sleep_time else sleep_time)
 
     def handle(self, *args, **options):
         browsers = self.get_browsers()
@@ -75,14 +75,17 @@ class Command(BaseCommand):
 
             self.sleep()
 
-            self.stdout.write(self.style.SUCCESS("Submitting votes..."))
+            for i in range(3):
+                self.stdout.write(self.style.SUCCESS("Submitting votes..."))
 
-            for i, browser in enumerate(browsers):
-                button = browser.find_element_by_class_name('voteRadio')
-                button.click()
+                for i, browser in enumerate(browsers):
+                    button = browser.find_element_by_class_name('voteRadio')
+                    button.click()
 
-                button = browser.find_element_by_id('votingSubmit')
-                button.click()
+                    button = browser.find_element_by_id('votingSubmit')
+                    button.click()
+
+                self.sleep(20)
 
             self.stdout.write(self.style.SUCCESS("Okay, we're all done! Hit enter to quit."))
             input(">")

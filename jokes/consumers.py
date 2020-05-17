@@ -70,9 +70,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await asyncio.sleep(15)
         await self.reset_voting_status()
         await self.remove_responses(prompt)
-        await self.send(text_data=json.dumps({
-            "type": "begin_voting",
-        }, indent=2))
+        if await self.still_voting():
+            await self.send(text_data=json.dumps({
+                "type": "begin_voting",
+            }, indent=2))
+        else:
+            await self.send(text_data=json.dumps({
+                "type": "reset_session",
+            }, indent=2))
 
     async def vote_submission(self, event):
         player: Player = await self.get_player(event['player'])
@@ -256,3 +261,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         for response in prompt.response_set.filter(session=self.session):
             response.delete()
 
+    @database_sync_to_async
+    def still_voting(self):
+        return list(self.session.response_set.all())
+
+    @database_sync_to_async
+    def reset_players(self):
+        self.session.status = 'start'
+        self.session.started = False
+        self.session.save()
+        for player in self.session.player_set.all():
+            print("Resetting players for new round...")
+            player.voted = False
+            player.is_ready = False
+            player.submitted_prompts = False
+
+            player.save()
+            print("{} reset.".format(player))
