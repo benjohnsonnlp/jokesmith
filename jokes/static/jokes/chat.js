@@ -26,7 +26,7 @@ chatSocket.onerror = function (e) {
 chatSocket.onopen = function (e) {
     chatSocket.send(JSON.stringify({
         "type": "user_joined",
-        "username": player.name,
+        "player": player,
     }));
 };
 
@@ -38,8 +38,7 @@ function send_message(title, body) {
     if (title) {
         message += ('<div class="card-header">' + title + '</div>\n'
             + '<div class="card-body">' + body + "</div></div>");
-    }
-    else {
+    } else {
         message += '<div class="card-body notice">' + body + "</div></div>";
     }
 
@@ -101,6 +100,7 @@ function submitResponse() {
 }
 
 function pose_questions(data) {
+    $('.prompt-text').val('');
     $('#promptResponse').show();
     $('#waiting').hide();
     $.ajax({
@@ -198,9 +198,12 @@ function begin_voting(data) {
 }
 
 function user_joined(data) {
-    if (data.username !== player.name) {
+    if (data.player.id !== player.id) {
         $('#playerList ul').append(`
-            <li class="list-group-item">${data.username}</li>
+            <li class="list-group-item" playerId="${data.player.id}">
+                ${data.player.name}
+                <span class="badge badge-primary badge-pill">${data.player.score}</span>
+            </li>
         `);
     }
 }
@@ -241,8 +244,11 @@ function user_joined(data) {
 //       },
 //       "votes": []
 //     }
-//   ]
+//   ],
+//   players: [ list of player objects]
 // }
+
+
 
 function display_results(data) {
     $('#promptResponse').hide();
@@ -250,6 +256,7 @@ function display_results(data) {
     $('#votingContainer').hide();
     $('#resultsContainer').show();
 
+    updatePlayerInfo(data.players);
 
     $('#resultsContainer h3').text(data.prompt.text);
     let list = $('#resultsContainer > ul');
@@ -259,12 +266,12 @@ function display_results(data) {
         let html = '';
         html += `
             <li class="list-group-item">
-                 ${result.response.text} - ${result.votes.length} votes
+                 ${result.response.text} <i>--${result.response.player_name}</i>: ${result.votes.length} votes
                  <ul class="list-group">
         `;
 
-        result.votes.forEach(function(vote, index) {
-           html += `
+        result.votes.forEach(function (vote, index) {
+            html += `
                     <li class="list-group-item">
                        ${vote.player_name}
                     </li>
@@ -280,6 +287,24 @@ function display_results(data) {
     }
 }
 
+function updatePlayerInfo(players) {
+    players.forEach(function(player, index){
+        let score = player.score;
+        $(`#playerList li[playerId=${player.id}] span.badge`).each(function() {
+            $(this).text(score);
+        });
+    });
+
+}
+
+function reset_session(data) {
+    $('#promptResponse').hide();
+    $('#waiting').hide();
+    $('#votingContainer').hide();
+    $('#resultsContainer').hide();
+    $('#readyButton').show();
+}
+
 function handle_game_events(data) {
     const handlers = {
         "start_match": start_match,
@@ -287,7 +312,8 @@ function handle_game_events(data) {
         "user_joined": user_joined,
         "next_question": pose_questions,
         "begin_voting": begin_voting,
-        "display_results": display_results
+        "display_results": display_results,
+        "reset_session": reset_session
     };
     if (data.type in handlers) {
         handlers[data.type](data);
@@ -330,7 +356,7 @@ document.querySelector('#chat-message-input').onkeyup = function (e) {
 
 
 $('#readyButton').click(function (e) {
-    $('#readyButton').css('display', 'none');
+    $('#readyButton').hide();
     chatSocket.send(JSON.stringify({
         "type": "player_readied",
         "username": player.name

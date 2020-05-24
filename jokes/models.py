@@ -1,8 +1,8 @@
 from random import shuffle, randint, sample
 from typing import List
 
-from django.db import models
-from django.db.models import Max
+from django.db import models, transaction
+from django.db.models import Max, F
 from django.forms.models import model_to_dict
 
 
@@ -19,7 +19,10 @@ class Session(models.Model):
 
     def build_responses(self):
         # for now, randomly get prompts
-        players = list(self.player_set.all())
+        players = list(set(self.player_set.all()))
+        for player in players:
+            for response in player.response_set.all():
+                response.delete()
         shuffle(players)
         prompts = Prompt.random_set(len(players))
         for i, player in enumerate(players):
@@ -41,6 +44,7 @@ class Player(models.Model):
     is_ready = models.BooleanField(default=False)
     submitted_prompts = models.BooleanField(default=False)
     voted = models.BooleanField(default=False)
+    score = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ("name", "session")
@@ -56,6 +60,15 @@ class Player(models.Model):
             self.session.build_responses()
         responses = list(self.response_set.filter(text="", session=self.session))
         return responses
+
+    # @transaction.atomic
+    def increase_score(self):
+        self.refresh_from_db()
+        print("{}'s score is {}".format(self.name, self.score))
+        self.score = F('score') + 1
+        self.save()
+        self.refresh_from_db()
+        print("{}'s score increased to {}".format(self.name, self.score))
 
 
 class Prompt(models.Model):
@@ -119,7 +132,9 @@ class Response(models.Model):
     text = models.TextField()
 
     def dict(self):
-        return model_to_dict(self)
+        output = model_to_dict(self)
+        output['player_name'] = self.player.name
+        return output
 
     def __str__(self):
         player_name = self.player.name if self.player else "unknown-player"

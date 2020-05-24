@@ -71,6 +71,7 @@ class WorkflowTests(TestCase):
                 self.browser('index') as browser_b, \
                 self.browser('index') as browser_c:
             browsers = (browser_a, browser_b, browser_c)
+            print("Logging test users in...")
             for i, browser in enumerate(browsers):
                 elem = browser.find_element_by_id('username')  # Find the search box
                 elem.send_keys('testuser' + str(i) + Keys.RETURN)
@@ -79,23 +80,28 @@ class WorkflowTests(TestCase):
                 elem.send_keys('testsession' + Keys.RETURN)
 
             time.sleep(self.SLEEP_TIME)
-
+            print("Readying users...")
             for browser in browsers:
                 button = browser.find_element_by_id('readyButton')
                 button.click()
 
             time.sleep(self.SLEEP_TIME)
 
+
             browser = browsers[0]
             button = browser.find_element_by_id('readyButton')
             self.assertFalse(button.is_displayed())
 
-            for browser in browsers:
+            print("Prompt submission...")
+            for i, browser in enumerate(browsers):
+                text = browser.find_element_by_class_name('form-control')
+                text.send_keys('Prompt from bot #' + str(i))
                 button = browser.find_element_by_id('submitPrompt')
                 button.click()
 
             time.sleep(self.SLEEP_TIME)
 
+            print("Submitting responses...")
             for i, browser in enumerate(browsers):
                 button = browser.find_element_by_id('submitResponse')
                 text = browser.find_element_by_id('responseText')
@@ -104,6 +110,7 @@ class WorkflowTests(TestCase):
 
             time.sleep(self.SLEEP_TIME)
 
+            print("Second round of response submission...")
             for i, browser in enumerate(browsers):
                 button = browser.find_element_by_id('submitResponse')
                 text = browser.find_element_by_id('responseText')
@@ -112,15 +119,32 @@ class WorkflowTests(TestCase):
 
             time.sleep(self.SLEEP_TIME)
 
-            vote_disabled_count = 0
-            for i, browser in enumerate(browsers):
-                try:
-                    button = browser.find_element_by_class_name('voteRadio')
+            for i in range(3):
+                print("Submitting votes (attempt #{})".format(i + 1))
+                vote_disabled_count = 0
+                for browser in browsers:
+                    try:
+                        button = browser.find_element_by_class_name('voteRadio')
+                        button.click()
+                    except NoSuchElementException:
+                        browser.find_element_by_class_name('no-vote')
+                        vote_disabled_count += 1
+                        continue
+
+                    button = browser.find_element_by_id('votingSubmit')
                     button.click()
-                except NoSuchElementException:
-                    browser.find_element_by_class_name('no-vote')
-                    vote_disabled_count += 1
-                    continue
-                button = browser.find_element_by_id('votingSubmit')
+                self.assertEqual(vote_disabled_count, 2)
+                time.sleep(20)
+
+            time.sleep(self.SLEEP_TIME)
+            print("Readying users... (again)")
+            for browser in browsers:
+                button = browser.find_element_by_id('readyButton')
                 button.click()
-            self.assertEqual(vote_disabled_count, 2)
+
+            time.sleep(self.SLEEP_TIME)
+
+            # Make sure that
+            text = browser.find_element_by_class_name('form-control')
+            self.assertEqual(text.get_attribute("value"), '', msg="Checking that prompt fields were cleared")
+

@@ -23,17 +23,16 @@
 <body style="height: 100%" class="h-100 mh-100">
 
 <div class="container h-100 mh-100">
-    <div class="row mh-50 h-50 top-row" style="" >
+    <div class="row mh-50 h-50 top-row" style="">
         <div class="col-8" id="playArea">
-            <h1>Phase: {{ phase }}</h1>
             <div id="prompts" style="{% if phase == "prompts" %}{% else %}display:none{% endif %}">
                 <h4>Fill out two clues!</h4>
                 <p>
                     Clues should be sound like a title of a top ten list, e.g. "awkward foods to serve at a funeral" or
                     "best ways to get rid of an ex". If you really can't think of something, leave it blank.
                 </p>
-                <input type="text" class="form-control prompt" placeholder="Enter prompt here"/>
-                <input type="text" class="form-control prompt" placeholder="Enter another prompt here"/>
+                <input type="text" class="prompt-text form-control prompt" placeholder="Enter prompt here"/>
+                <input type="text" class="prompt-text form-control prompt" placeholder="Enter another prompt here"/>
                 <input type="button" id="submitPrompt" class="btn btn-primary" value="Done!"/>
             </div>
             {% if phase == 'start' %}
@@ -49,7 +48,7 @@
             </div>
             <div id="votingContainer" class="" style="display: none">
                 <h3></h3>
-{#                <div class="btn-group btn-group-toggle row" data-toggle="buttons">#}
+                {#                <div class="btn-group btn-group-toggle row" data-toggle="buttons">#}
                 <div class="group">
                 </div>
                 <div class="w-100"></div>
@@ -68,10 +67,16 @@
         </div>
         <div id="playerList" class="col" style="border:2px solid lightgray; padding:5px">
             <ul class="list-group">
-                <li class="list-group-item list-group-item-primary">{{ player.name }}</li>
+                <li class="list-group-item list-group-item-primary" playerId="{{ player.id }}">
+                    {{ player.name }}
+                    <span class="badge badge-primary badge-pill">{{ player.score }}</span>
+                </li>
                 {% for p in players %}
                     {% if p != player %}
-                        <li class="list-group-item">{{ p.name }}</li>
+                        <li class="list-group-item" playerId="{{ p.id }}">
+                            {{ p.name }}
+                            <span class="badge badge-primary badge-pill">{{ p.score }}</span>
+                        </li>
                     {% endif %}
                 {% endfor %}
             </ul>

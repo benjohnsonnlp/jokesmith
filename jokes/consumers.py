@@ -3,7 +3,8 @@ import json
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.db import close_old_connections
+from django.db import close_old_connections, transaction
+from django.db.models import F
 
 from jokes.models import Session, Player, Prompt, Response, Vote
 
@@ -62,7 +63,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             {
                 "type": "display_results",
                 "prompt": prompt.dict(),
-                "results": votes
+                "results": votes,
+                "players": await self.get_session_players(),
             },
             indent=2
         ))
@@ -70,9 +72,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await asyncio.sleep(15)
         await self.reset_voting_status()
         await self.remove_responses(prompt)
-        await self.send(text_data=json.dumps({
-            "type": "begin_voting",
-        }, indent=2))
+        if await self.still_voting():
+            await self.send(text_data=json.dumps({
+                "type": "begin_voting",
+            }, indent=2))
+        else:
+            await self.reset_players()
+            await self.send(text_data=json.dumps({
+                "type": "reset_session",
+            }, indent=2))
 
     async def vote_submission(self, event):
         player: Player = await self.get_player(event['player'])
@@ -80,7 +88,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.add_vote(event)
             if await self.all_voted():
                 # await self.reset_voting_status()
-
+                print("Telling clients to display results")
                 await self.channel_layer.group_send(
                     self.room_group_name, {
                         "type": "display_results",
@@ -112,10 +120,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # check if all are submitted
         if await self.all_responses_submitted():
+            print("Broadcasting that all responses were submitted")
             await self.reset_voting_status()
-            await self.send(text_data=json.dumps({
-                "type": "begin_voting",
-            }))
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    "type": "begin_voting",
+                })
+
+    async def begin_voting(self, event):
+        await self.send(text_data=json.dumps(event))
 
     async def prompt_submission(self, event):
         player: Player = await self.get_player(event['player'])
@@ -215,15 +228,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def all_responses_submitted(self):
         if not self.session.response_set.filter(text=""):
             self.session.status = 'voting'
+            self.session.save()
             return True
         return False
 
     @database_sync_to_async
     def add_vote(self, event):
-        self.player.voted = True
-        self.player.save()
-        vote: Vote = Vote(player=self.player, response_id=event['response_id'], session=self.session)
-        vote.save()
+        with transaction.atomic():
+            response: Response = Response.objects.get(pk=event['response_id'])
+            author: Player = response.player
+            author.increase_score()
+            self.player.refresh_from_db()
+            self.player.voted = True
+            self.player.save()
+            vote: Vote = Vote(player=self.player, response_id=event['response_id'], session=self.session)
+            vote.save()
+
 
     @database_sync_to_async
     def all_voted(self):
@@ -256,3 +276,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
         for response in prompt.response_set.filter(session=self.session):
             response.delete()
 
+    @database_sync_to_async
+    def still_voting(self):
+        return list(self.session.response_set.all())
+
+    @database_sync_to_async
+    def reset_players(self):
+        self.session.status = 'start'
+        self.session.started = False
+        self.session.save()
+        print("Resetting players for new round...")
+        response: Response
+        for response in self.session.response_set.all():
+            response.delete()
+        for player in self.session.player_set.all():
+            player.voted = False
+            player.is_ready = False
+            player.submitted_prompts = False
+
+            player.save()
+            print("{} reset.".format(player))
+
+    @database_sync_to_async
+    def get_session_players(self):
+        return [p.dict() for p in self.session.player_set.all()]
