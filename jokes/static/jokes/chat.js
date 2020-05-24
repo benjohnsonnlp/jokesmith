@@ -26,7 +26,7 @@ chatSocket.onerror = function (e) {
 chatSocket.onopen = function (e) {
     chatSocket.send(JSON.stringify({
         "type": "user_joined",
-        "username": player.name,
+        "player": player,
     }));
 };
 
@@ -188,9 +188,12 @@ function begin_voting(data) {
 }
 
 function user_joined(data) {
-    if (data.username !== player.name) {
+    if (data.player.id !== player.id) {
         $('#playerList ul').append(`
-            <li class="list-group-item">${data.username}</li>
+            <li class="list-group-item" playerId="${data.player.id}">
+                ${data.player.name}
+                <span class="badge badge-primary badge-pill">${data.player.score}</span>
+            </li>
         `);
     }
 }
@@ -231,8 +234,11 @@ function user_joined(data) {
 //       },
 //       "votes": []
 //     }
-//   ]
+//   ],
+//   players: [ list of player objects]
 // }
+
+
 
 function display_results(data) {
     $('#promptResponse').hide();
@@ -240,6 +246,7 @@ function display_results(data) {
     $('#votingContainer').hide();
     $('#resultsContainer').show();
 
+    updatePlayerInfo(data.players);
 
     $('#resultsContainer h3').text(data.prompt.text);
     let list = $('#resultsContainer > ul');
@@ -268,6 +275,16 @@ function display_results(data) {
 
         list.append(html);
     }
+}
+
+function updatePlayerInfo(players) {
+    players.forEach(function(player, index){
+        let score = player.score;
+        $(`#playerList li[playerId=${player.id}] span.badge`).each(function() {
+            $(this).text(score);
+        });
+    });
+
 }
 
 function reset_session(data) {

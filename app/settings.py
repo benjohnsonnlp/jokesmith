@@ -94,8 +94,18 @@ DATABASES = {
         'TEST': {
             'NAME': os.path.join(BASE_DIR, 'test_db.sqlite3')
         }
+    },
+    "postgres": {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': 54320,
     }
 }
+
+DATABASES['default'] = DATABASES[environ.get('DJANGO_DB', 'default')]
 
 
 # Password validation
