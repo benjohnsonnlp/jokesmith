@@ -86,7 +86,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.add_vote(event)
             if await self.all_voted():
                 # await self.reset_voting_status()
-
+                print("Telling clients to display results")
                 await self.channel_layer.group_send(
                     self.room_group_name, {
                         "type": "display_results",
@@ -118,6 +118,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # check if all are submitted
         if await self.all_responses_submitted():
+            print("Broadcasting that all responses were submitted")
             await self.reset_voting_status()
             await self.send(text_data=json.dumps({
                 "type": "begin_voting",

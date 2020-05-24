@@ -248,7 +248,7 @@ function display_results(data) {
         let html = '';
         html += `
             <li class="list-group-item">
-                 ${result.response.text} - ${result.votes.length} votes
+                 ${result.response.text} <i>--${result.response.player_name}</i>: ${result.votes.length} votes
                  <ul class="list-group">
         `;
 
