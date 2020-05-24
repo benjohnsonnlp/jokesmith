@@ -92,8 +92,10 @@ class WorkflowTests(TestCase):
             button = browser.find_element_by_id('readyButton')
             self.assertFalse(button.is_displayed())
 
-            print("Bypassing prompt submission...")
-            for browser in browsers:
+            print("Prompt submission...")
+            for i, browser in enumerate(browsers):
+                text = browser.find_element_by_class_name('form-control')
+                text.send_keys('Prompt from bot #' + str(i))
                 button = browser.find_element_by_id('submitPrompt')
                 button.click()
 
@@ -128,3 +130,15 @@ class WorkflowTests(TestCase):
                     button.click()
 
                 time.sleep(20)
+
+            time.sleep(self.SLEEP_TIME)
+            print("Readying users... (again)")
+            for browser in browsers:
+                button = browser.find_element_by_id('readyButton')
+                button.click()
+
+            time.sleep(self.SLEEP_TIME)
+
+            # Make sure that
+            text = browser.find_element_by_class_name('form-control')
+            self.assertEqual(text.get_attribute("value"), '', msg="Checking that prompt fields were cleared")
