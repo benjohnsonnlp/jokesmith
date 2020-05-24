@@ -75,7 +75,7 @@ class Command(BaseCommand):
 
             self.sleep()
 
-            for i in range(1):
+            for i in range(3):
                 self.stdout.write(self.style.SUCCESS("Submitting votes..."))
 
                 for i, browser in enumerate(browsers):
@@ -84,7 +84,6 @@ class Command(BaseCommand):
 
                     button = browser.find_element_by_id('votingSubmit')
                     button.click()
-                    self.sleep(0.5)
 
                 self.sleep(20)
 
