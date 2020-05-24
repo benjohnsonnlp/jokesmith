@@ -100,6 +100,7 @@ function submitResponse() {
 }
 
 function pose_questions(data) {
+    $('.prompt-text').val('');
     $('#promptResponse').show();
     $('#waiting').hide();
     $.ajax({
