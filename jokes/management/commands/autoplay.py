@@ -84,6 +84,7 @@ class Command(BaseCommand):
 
                     button = browser.find_element_by_id('votingSubmit')
                     button.click()
+                    self.sleep(0.5)
 
                 self.sleep(20)
 

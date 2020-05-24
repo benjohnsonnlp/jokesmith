@@ -41,6 +41,7 @@ class Player(models.Model):
     is_ready = models.BooleanField(default=False)
     submitted_prompts = models.BooleanField(default=False)
     voted = models.BooleanField(default=False)
+    score = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ("name", "session")

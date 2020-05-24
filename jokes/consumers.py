@@ -3,7 +3,8 @@ import json
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.db import close_old_connections
+from django.db import close_old_connections, transaction
+from django.db.models import F
 
 from jokes.models import Session, Player, Prompt, Response, Vote
 
@@ -120,9 +121,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if await self.all_responses_submitted():
             print("Broadcasting that all responses were submitted")
             await self.reset_voting_status()
-            await self.send(text_data=json.dumps({
-                "type": "begin_voting",
-            }))
+            await self.channel_layer.group_send(
+                self.room_group_name, {
+                    "type": "begin_voting",
+                })
+
+    async def begin_voting(self, event):
+        await self.send(text_data=json.dumps(event))
 
     async def prompt_submission(self, event):
         player: Player = await self.get_player(event['player'])
@@ -222,15 +227,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def all_responses_submitted(self):
         if not self.session.response_set.filter(text=""):
             self.session.status = 'voting'
+            self.session.save()
             return True
         return False
 
     @database_sync_to_async
     def add_vote(self, event):
-        self.player.voted = True
-        self.player.save()
-        vote: Vote = Vote(player=self.player, response_id=event['response_id'], session=self.session)
-        vote.save()
+        with transaction.atomic():
+            response: Response = Response.objects.get(pk=event['response_id'])
+            author: Player = response.player
+            author.refresh_from_db()
+            print("{}'s score is {}".format(author.name, author.score))
+            author.score = author.score + 1
+            author.save()
+
+            self.player.voted = True
+            self.player.save()
+            vote: Vote = Vote(player=self.player, response_id=event['response_id'], session=self.session)
+            vote.save()
+            author.refresh_from_db()
+            print("{}'s score increased to {}".format(author.name, author.score))
 
     @database_sync_to_async
     def all_voted(self):
