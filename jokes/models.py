@@ -19,7 +19,10 @@ class Session(models.Model):
 
     def build_responses(self):
         # for now, randomly get prompts
-        players = list(self.player_set.all())
+        players = list(set(self.player_set.all()))
+        for player in players:
+            for response in player.response_set.all():
+                response.delete()
         shuffle(players)
         prompts = Prompt.random_set(len(players))
         for i, player in enumerate(players):

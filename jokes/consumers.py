@@ -286,6 +286,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.session.started = False
         self.session.save()
         print("Resetting players for new round...")
+        response: Response
+        for response in self.session.response_set.all():
+            response.delete()
         for player in self.session.player_set.all():
             player.voted = False
             player.is_ready = False

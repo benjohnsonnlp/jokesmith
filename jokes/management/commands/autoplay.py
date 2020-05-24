@@ -85,7 +85,7 @@ class Command(BaseCommand):
                     button = browser.find_element_by_id('votingSubmit')
                     button.click()
 
-                self.sleep(20)
+                self.sleep(16)
 
             self.stdout.write(self.style.SUCCESS("Okay, we're all done! Hit enter to quit."))
             input(">")
