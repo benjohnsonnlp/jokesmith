@@ -75,18 +75,18 @@ class Command(BaseCommand):
 
             self.sleep()
 
-            for i in range(3):
-                self.stdout.write(self.style.SUCCESS("Submitting votes..."))
-
-                for i, browser in enumerate(browsers):
-                    button = browser.find_element_by_class_name('voteRadio')
-                    button.click()
-
-                    button = browser.find_element_by_id('votingSubmit')
-                    button.click()
-                    self.sleep(0.5)
-
-                self.sleep(20)
+            # for i in range(3):
+            #     self.stdout.write(self.style.SUCCESS("Submitting votes..."))
+            #
+            #     for i, browser in enumerate(browsers):
+            #         button = browser.find_element_by_class_name('voteRadio')
+            #         button.click()
+            #
+            #         button = browser.find_element_by_id('votingSubmit')
+            #         button.click()
+            #         self.sleep(0.5)
+            #
+            #     self.sleep(20)
 
             self.stdout.write(self.style.SUCCESS("Okay, we're all done! Hit enter to quit."))
             input(">")

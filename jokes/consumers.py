@@ -236,17 +236,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         with transaction.atomic():
             response: Response = Response.objects.get(pk=event['response_id'])
             author: Player = response.player
-            author.refresh_from_db()
-            print("{}'s score is {}".format(author.name, author.score))
-            author.score = author.score + 1
-            author.save()
-
+            author.increase_score()
+            self.player.refresh_from_db()
             self.player.voted = True
             self.player.save()
             vote: Vote = Vote(player=self.player, response_id=event['response_id'], session=self.session)
             vote.save()
-            author.refresh_from_db()
-            print("{}'s score increased to {}".format(author.name, author.score))
+
 
     @database_sync_to_async
     def all_voted(self):

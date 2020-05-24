@@ -1,8 +1,8 @@
 from random import shuffle, randint, sample
 from typing import List
 
-from django.db import models
-from django.db.models import Max
+from django.db import models, transaction
+from django.db.models import Max, F
 from django.forms.models import model_to_dict
 
 
@@ -57,6 +57,15 @@ class Player(models.Model):
             self.session.build_responses()
         responses = list(self.response_set.filter(text="", session=self.session))
         return responses
+
+    # @transaction.atomic
+    def increase_score(self):
+        self.refresh_from_db()
+        print("{}'s score is {}".format(self.name, self.score))
+        self.score = F('score') + 1
+        self.save()
+        self.refresh_from_db()
+        print("{}'s score increased to {}".format(self.name, self.score))
 
 
 class Prompt(models.Model):
