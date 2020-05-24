@@ -119,7 +119,9 @@ class Response(models.Model):
     text = models.TextField()
 
     def dict(self):
-        return model_to_dict(self)
+        output = model_to_dict(self)
+        output['player_name'] = self.player.name
+        return output
 
     def __str__(self):
         player_name = self.player.name if self.player else "unknown-player"
