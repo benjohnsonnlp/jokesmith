@@ -63,7 +63,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             {
                 "type": "display_results",
                 "prompt": prompt.dict(),
-                "results": votes
+                "results": votes,
+                "players": await self.get_session_players(),
             },
             indent=2
         ))
@@ -292,3 +293,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             player.save()
             print("{} reset.".format(player))
+
+    @database_sync_to_async
+    def get_session_players(self):
+        return [p.dict() for p in self.session.player_set.all()]
