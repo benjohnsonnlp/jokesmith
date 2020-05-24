@@ -156,21 +156,31 @@ function displayVoting(msg) {
     $('#votingContainer h3').text(msg.prompt.text);
     let list = $('#votingContainer .group');
     list.html('');
-    for (i in msg.responses) {
-        let response = msg.responses[i];
-        list.append(`
-            <div class="form-check">
-                <input type="radio" name="voteOptions" 
-                       class="form-check-input voteRadio" responseId="${response.id}"> 
-                
-                <label class="form-check-label">
-                    ${response.text}
-                </label>
-            
-            </div>
-        `);
+    if (!msg.can_vote) {
+       list.append("<p class=\"no-vote\"><em>Nothing to do right now, your quip is being voted on as we speak!</em> Here are the options:</p><ul>");
+       for (i in msg.responses) {
+           let response = msg.responses[i];
+           list.append(`<li>${response.text}</li>`);
+       }
+       list.append("</ul>");
+       $('#votingSubmit').hide();
+    } else {
+        for (i in msg.responses) {
+            let response = msg.responses[i];
+            list.append(`
+                <div class="form-check">
+                    <input type="radio" name="voteOptions"
+                           class="form-check-input voteRadio" responseId="${response.id}">
+
+                    <label class="form-check-label">
+                        ${response.text}
+                    </label>
+
+                </div>
+            `);
+        }
+        $('#votingSubmit').off('click').click(submitVote);
     }
-    $('#votingSubmit').off('click').click(submitVote);
 }
 
 function begin_voting(data) {

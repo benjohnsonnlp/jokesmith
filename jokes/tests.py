@@ -1,10 +1,10 @@
 from contextlib import contextmanager
 import time
 
-from channels.testing import ChannelsLiveServerTestCase
 from django.test import override_settings, TestCase
 from django.urls import reverse
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 
@@ -39,7 +39,7 @@ class WorkflowTests(TestCase):
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         browser = webdriver.Chrome(chrome_options=chrome_options)
-
+        browser.implicitly_wait(10)
         browser.get(url)
         yield browser
         browser.quit()
@@ -112,9 +112,15 @@ class WorkflowTests(TestCase):
 
             time.sleep(self.SLEEP_TIME)
 
+            vote_disabled_count = 0
             for i, browser in enumerate(browsers):
-                button = browser.find_element_by_class_name('voteRadio')
-                button.click()
-
+                try:
+                    button = browser.find_element_by_class_name('voteRadio')
+                    button.click()
+                except NoSuchElementException:
+                    browser.find_element_by_class_name('no-vote')
+                    vote_disabled_count += 1
+                    continue
                 button = browser.find_element_by_id('votingSubmit')
                 button.click()
+            self.assertEqual(vote_disabled_count, 2)
