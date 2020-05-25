@@ -156,15 +156,8 @@ function displayVoting(msg) {
     $('#votingContainer h3').text(msg.prompt.text);
     let list = $('#votingContainer .group');
     list.html('');
-    if (!msg.can_vote) {
-       list.append("<p class=\"no-vote\"><em>Nothing to do right now, your quip is being voted on as we speak!</em> Here are the options:</p><ul>");
-       for (i in msg.responses) {
-           let response = msg.responses[i];
-           list.append(`<li>${response.text}</li>`);
-       }
-       list.append("</ul>");
-       $('#votingSubmit').hide();
-    } else {
+    if (msg.can_vote) {
+        $('#votingSubmit').show();
         for (i in msg.responses) {
             let response = msg.responses[i];
             list.append(`
@@ -180,6 +173,14 @@ function displayVoting(msg) {
             `);
         }
         $('#votingSubmit').off('click').click(submitVote);
+    } else {
+       list.append("<p class=\"no-vote\"><em>Nothing to do right now, your quip is being voted on as we speak!</em> Here are the options:</p><ul>");
+       for (i in msg.responses) {
+           let response = msg.responses[i];
+           list.append(`<li>${response.text}</li>`);
+       }
+       list.append("</ul>");
+       $('#votingSubmit').hide();
     }
 }
 
