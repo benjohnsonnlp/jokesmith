@@ -34,3 +34,7 @@ h1 {
 .card-body.notice {
     font-style: italic;
 }
+
+#playArea, #playerList {
+    overflow: auto;
+}
