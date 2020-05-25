@@ -1,15 +1,22 @@
 import asyncio
 import json
+import logging
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.db import close_old_connections, transaction
-from django.db.models import F
 
 from jokes.models import Session, Player, Prompt, Response, Vote
 
 
+logger = logging.getLogger(__name__)
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
+
+    def log(self, msg, level=logging.INFO):
+        logger.log(level, msg)
+
     async def connect(self):
         room_name = self.scope['url_route']['kwargs']['room_name']
         player_name = self.scope['url_route']['kwargs']['player_name']
@@ -37,7 +44,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Receive message from WebSocket
     async def receive(self, text_data):
-        print("Received message: {}".format(text_data))
+        self.log("Received message: {}".format(text_data))
         text_data_json = json.loads(text_data)
 
         await self.channel_layer.group_send(
@@ -88,7 +95,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.add_vote(event)
             if await self.all_voted():
                 # await self.reset_voting_status()
-                print("Telling clients to display results")
+                self.log("Telling clients to display results")
                 await self.channel_layer.group_send(
                     self.room_group_name, {
                         "type": "display_results",
@@ -120,7 +127,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # check if all are submitted
         if await self.all_responses_submitted():
-            print("Broadcasting that all responses were submitted")
+            self.log("Broadcasting that all responses were submitted")
             await self.reset_voting_status()
             await self.channel_layer.group_send(
                 self.room_group_name, {
@@ -149,7 +156,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_responses(self, event):
-        print("Saving response for player {} from event {}".format(
+        self.log("Saving response for player {} from event {}".format(
             self.player.name,
             event['response_id']
         ))
@@ -203,7 +210,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.player.save()
         players = list(self.session.player_set.all())
         if not players:
-            print("Closing session {}...".format(self.session.name))
+            self.log("Closing session {}...".format(self.session.name))
             self.session.delete()
 
     @database_sync_to_async
@@ -244,21 +251,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
             vote: Vote = Vote(player=self.player, response_id=event['response_id'], session=self.session)
             vote.save()
 
-
     @database_sync_to_async
     def all_voted(self):
+        total_players = 0
+        voting_players = 0
         for player in self.session.player_set.all():
-            if not player.voted:
-                return False
-        return True
+            total_players += 1
+            if player.voted:
+                voting_players += 1
+        return total_players == voting_players + 2
 
     @database_sync_to_async
     def reset_voting_status(self):
-        print("Resetting players to voted = False...")
+        self.log("Resetting players to voted = False...")
         for player in self.session.player_set.all():
             player.voted = False
             player.save()
-            print("{} reset.".format(player))
+            self.log("{} reset.".format(player))
 
     @database_sync_to_async
     def get_voting_results(self, response_id):
@@ -285,7 +294,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.session.status = 'start'
         self.session.started = False
         self.session.save()
-        print("Resetting players for new round...")
+        self.log("Resetting players for new round...")
         response: Response
         for response in self.session.response_set.all():
             response.delete()
@@ -295,7 +304,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             player.submitted_prompts = False
 
             player.save()
-            print("{} reset.".format(player))
+            self.log("{} reset.".format(player))
 
     @database_sync_to_async
     def get_session_players(self):

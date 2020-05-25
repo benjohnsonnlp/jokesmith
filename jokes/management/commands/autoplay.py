@@ -4,6 +4,7 @@ import uuid
 from django.core.management.base import BaseCommand
 from django.urls import reverse
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 
@@ -78,12 +79,16 @@ class Command(BaseCommand):
             for i in range(3):
                 self.stdout.write(self.style.SUCCESS("Submitting votes..."))
 
-                for i, browser in enumerate(browsers):
+            for i, browser in enumerate(browsers):
+                try:
                     button = browser.find_element_by_class_name('voteRadio')
                     button.click()
+                except NoSuchElementException:
+                    browser.find_element_by_class_name('no-vote')
+                    continue
 
-                    button = browser.find_element_by_id('votingSubmit')
-                    button.click()
+                button = browser.find_element_by_id('votingSubmit')
+                button.click()
 
                 self.sleep(16)
 
@@ -93,7 +98,7 @@ class Command(BaseCommand):
         except Exception as exc:
 
             self.stdout.write(self.style.ERROR(f"Something went wrong:\n{type(exc)}:{exc}"))
-            input("Press enter when you're done >")
+            input("Press enter when you're done > ")
 
         for browser in browsers:
             browser.quit()
